@@ -3,12 +3,16 @@
 import React from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { CVPdfDocument } from './CVPdf';
+import { dictionaries, Language } from '../i18n/dictionaries';
 
-export default function PDFExportButton({ insights, objective }: { insights: any, objective: string }) {
+export default function PDFExportButton({ insights, objective, lang }: { insights: any, objective: string, lang: Language }) {
+    const t = dictionaries[lang].pdf;
+    const tApp = dictionaries[lang].app;
+
     return (
         <PDFDownloadLink
-            document={<CVPdfDocument data={insights} name="Applicant Name" targetRole={objective} />}
-            fileName="Enhanced_CV.pdf"
+            document={<CVPdfDocument data={insights} name="Applicant Name" targetRole={objective} labels={t} />}
+            fileName={t.filename}
             style={{ textDecoration: 'none', display: 'block' }}
         >
             {({ blob, url, loading, error }: any) => {
@@ -21,7 +25,7 @@ export default function PDFExportButton({ insights, objective }: { insights: any
                         style={{ width: "100%", padding: "1.25rem", fontSize: "1.1rem" }}
                         disabled={loading}
                     >
-                        {loading ? 'Generating PDF...' : 'Download PDF'}
+                        {loading ? tApp.generatingPdf : tApp.downloadPdf}
                     </button>
                 );
             }}

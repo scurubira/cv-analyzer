@@ -107,9 +107,14 @@ interface CVPdfProps {
     };
     name: string;
     targetRole: string;
+    labels: {
+        summary: string;
+        experience: string;
+        skills: string;
+    };
 }
 
-export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole }) => (
+export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, labels }) => (
     <Document>
         <Page size="A4" style={styles.page}>
 
@@ -121,13 +126,13 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole }) 
 
             {/* Summary Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Professional Summary</Text>
+                <Text style={styles.sectionTitle}>{labels.summary}</Text>
                 <Text style={styles.bodyText}>{data.summary.suggested}</Text>
             </View>
 
             {/* Experience Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Experience</Text>
+                <Text style={styles.sectionTitle}>{labels.experience}</Text>
                 {data.experiences.map((exp) => (
                     <View key={exp.id} style={styles.experienceItem}>
                         <View style={styles.expHeader}>
@@ -149,7 +154,7 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole }) 
 
             {/* Skills Section */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Core Competencies</Text>
+                <Text style={styles.sectionTitle}>{labels.skills}</Text>
                 <View style={styles.skillsSection}>
                     {data.skills.suggested.map((skill, idx) => (
                         <Text key={idx} style={styles.skillBadge}>{skill}</Text>

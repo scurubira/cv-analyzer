@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, FileText, ArrowRight, Sparkles, Check, X, RefreshCw, FileDown } from "lucide-react";
+import { UploadCloud, FileText, ArrowRight, Sparkles, Check, X, RefreshCw, FileDown, Globe } from "lucide-react";
 import dynamic from "next/dynamic";
+import { dictionaries, Language } from "../i18n/dictionaries";
 
 const PDFExportButton = dynamic(
   () => import("../components/PDFExportButton"),
@@ -30,8 +31,10 @@ export default function Home() {
   const [objective, setObjective] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [insights, setInsights] = useState<InsightData | null>(null);
+  const [lang, setLang] = useState<Language>('pt');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = dictionaries[lang].app;
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -51,7 +54,7 @@ export default function Home() {
       if (droppedFile.type === "application/pdf") {
         setFile(droppedFile);
       } else {
-        alert("Please upload a PDF file.");
+        alert(t.errorUpload);
       }
     }
   };
@@ -71,6 +74,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('objective', objective);
+      formData.append('language', lang);
 
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -84,23 +88,36 @@ export default function Home() {
       setPhase('review');
     } catch (error) {
       console.error(error);
-      alert('Failed to analyze CV. Please try again.');
+      alert(t.errorAnalyze);
       setPhase('upload');
     }
   };
 
+  const toggleLanguage = () => {
+    setLang(prev => prev === 'en' ? 'pt' : 'en');
+  };
+
   return (
-    <main className="container">
+    <main className="container relative">
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--glass-glow)] transition-all text-sm font-medium"
+        >
+          <Globe size={16} />
+          {lang === 'en' ? 'PT-BR' : 'EN'}
+        </button>
+      </div>
+
       {/* Header */}
       <div className={`text-center mt-8 mb-8 animate-slide-up ${phase !== 'upload' ? 'header-shrink' : ''}`} style={{ animationDelay: "0.1s" }}>
         <h1 style={{ fontSize: phase === 'upload' ? "3.5rem" : "2.5rem", transition: "all 0.5s ease" }}>
-          Elevate Your CV with <br />
-          <span className="text-gradient hover-glow">AI Precision</span>
+          {t.title} <br />
+          <span className="text-gradient hover-glow">{t.subtitle}</span>
         </h1>
         {phase === 'upload' && (
           <p className="subtitle" style={{ maxWidth: "600px", margin: "1rem auto" }}>
-            Upload your resume, tell us your dream role, and let our AI tailor your
-            experience to perfectly match what recruiters are looking for.
+            {t.description}
           </p>
         )}
       </div>
@@ -109,7 +126,7 @@ export default function Home() {
       {phase === 'upload' && (
         <div className="glass-panel animate-slide-up" style={{ maxWidth: "800px", margin: "0 auto", animationDelay: "0.2s" }}>
           <div className="input-group">
-            <label className="input-label">1. Upload your current CV (PDF)</label>
+            <label className="input-label">{t.step1}</label>
             <div
               className={`file-upload-zone ${isDragging ? "drag-active" : ""}`}
               onDragOver={handleDragOver}
@@ -136,18 +153,18 @@ export default function Home() {
               ) : (
                 <>
                   <UploadCloud size={48} className="file-icon" />
-                  <h3>Drag & Drop your PDF here</h3>
-                  <p className="subtitle" style={{ fontSize: "0.95rem" }}>or click to browse from your computer</p>
+                  <h3>{t.dragDrop}</h3>
+                  <p className="subtitle" style={{ fontSize: "0.95rem" }}>{t.browse}</p>
                 </>
               )}
             </div>
           </div>
 
           <div className="input-group mt-8">
-            <label className="input-label">2. What is your career objective?</label>
+            <label className="input-label">{t.step2}</label>
             <textarea
               className="textarea-input"
-              placeholder="e.g., 'I want to apply for a Senior Frontend Engineer role at a Fintech company focusing on React and performance optimization.'"
+              placeholder={t.objectivePlaceholder}
               value={objective}
               onChange={(e) => setObjective(e.target.value)}
             />
@@ -161,7 +178,7 @@ export default function Home() {
               style={{ width: "100%", padding: "1.25rem" }}
             >
               <Sparkles size={20} />
-              Analyze & Enhance My CV
+              {t.analyzeBtn}
               <ArrowRight size={20} style={{ marginLeft: "auto" }} />
             </button>
           </div>
@@ -172,8 +189,8 @@ export default function Home() {
       {phase === 'analyzing' && (
         <div className="text-center animate-slide-up" style={{ marginTop: "10vh" }}>
           <div className="radar-spinner"></div>
-          <h2 className="mt-8 text-gradient">AI is scanning your CV...</h2>
-          <p className="subtitle">Matching your experience with '{objective}'</p>
+          <h2 className="mt-8 text-gradient">{t.scanning}</h2>
+          <p className="subtitle">{t.matching} &apos;{objective}&apos;</p>
         </div>
       )}
 
@@ -183,21 +200,21 @@ export default function Home() {
           <div className="glass-panel mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="text-gradient" size={24} />
-              <h2>Professional Summary</h2>
+              <h2>{t.summary}</h2>
             </div>
             <div className="diff-view">
               <div className="diff-original">
-                <span className="badge badge-error">Current</span>
+                <span className="badge badge-error">{t.current}</span>
                 <p>{insights.summary.original}</p>
               </div>
               <div className="diff-suggested mt-4">
-                <span className="badge badge-success">AI Suggestion</span>
+                <span className="badge badge-success">{t.suggestion}</span>
                 <p>{insights.summary.suggested}</p>
               </div>
             </div>
             <div className="action-bar mt-4 flex gap-4">
-              <button className="btn-outline flex-1"><X size={16} /> Decline</button>
-              <button className="btn-success flex-1"><Check size={16} /> Accept Suggestion</button>
+              <button className="btn-outline flex-1"><X size={16} /> {t.decline}</button>
+              <button className="btn-success flex-1"><Check size={16} /> {t.accept}</button>
             </div>
           </div>
 
@@ -208,7 +225,7 @@ export default function Home() {
 
               <div className="diff-view">
                 <div className="diff-suggested mt-4">
-                  <span className="badge badge-success">Tailored Bullets</span>
+                  <span className="badge badge-success">{t.tailored}</span>
                   <ul style={{ paddingLeft: "1.5rem", marginTop: "0.5rem" }}>
                     {exp.suggestedBullets.map((bullet, i) => (
                       <li key={i} style={{ marginBottom: "0.5rem", lineHeight: "1.5" }}>{bullet}</li>
@@ -217,8 +234,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="action-bar mt-4 flex gap-4">
-                <button className="btn-outline flex-1"><RefreshCw size={16} /> Edit manually</button>
-                <button className="btn-success flex-1"><Check size={16} /> Apply to CV</button>
+                <button className="btn-outline flex-1"><RefreshCw size={16} /> {t.editManually}</button>
+                <button className="btn-success flex-1"><Check size={16} /> {t.applyToCv}</button>
               </div>
             </div>
           ))}
@@ -226,7 +243,7 @@ export default function Home() {
           <div className="text-center mt-8 mb-8 pt-8" style={{ borderTop: "1px solid var(--glass-border)" }}>
             <button className="btn-primary" onClick={() => setPhase('export')} style={{ padding: "1.2rem 3rem", fontSize: "1.1rem" }}>
               <FileDown size={24} />
-              Generate Polished CV
+              {t.generateBtn}
             </button>
           </div>
         </div>
@@ -236,16 +253,17 @@ export default function Home() {
       {phase === 'export' && insights && (
         <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: "600px", margin: "10vh auto" }}>
           <FileDown size={64} className="text-gradient mx-auto mb-4" />
-          <h2 className="mb-4">Your CV is Ready!</h2>
-          <p className="subtitle mb-8">We've applied all your chosen enhancements and compiled a beautiful new PDF.</p>
+          <h2 className="mb-4">{t.cvReady}</h2>
+          <p className="subtitle mb-8">{t.compiledMsg}</p>
 
-          <PDFExportButton insights={insights} objective={objective} />
+          <PDFExportButton insights={insights} objective={objective} lang={lang} />
 
           <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
-            Back to Review
+            {t.backToReview}
           </button>
         </div>
       )}
     </main>
   );
 }
+

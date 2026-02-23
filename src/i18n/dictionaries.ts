@@ -1,0 +1,80 @@
+export type Language = 'en' | 'pt';
+
+export const dictionaries = {
+    en: {
+        app: {
+            title: "Elevate Your CV with",
+            subtitle: "AI Precision",
+            description: "Upload your resume, tell us your dream role, and let our AI tailor your experience to perfectly match what recruiters are looking for.",
+            step1: "1. Upload your current CV (PDF)",
+            dragDrop: "Drag & Drop your PDF here",
+            browse: "or click to browse from your computer",
+            step2: "2. What is your career objective?",
+            objectivePlaceholder: "e.g., 'I want to apply for a Senior Frontend Engineer role at a Fintech company focusing on React and performance optimization.'",
+            analyzeBtn: "Analyze & Enhance My CV",
+            scanning: "AI is scanning your CV...",
+            matching: "Matching your experience with",
+            summary: "Professional Summary",
+            current: "Current",
+            suggestion: "AI Suggestion",
+            decline: "Decline",
+            accept: "Accept Suggestion",
+            tailored: "Tailored Bullets",
+            editManually: "Edit manually",
+            applyToCv: "Apply to CV",
+            generateBtn: "Generate Polished CV",
+            cvReady: "Your CV is Ready!",
+            compiledMsg: "We've applied all your chosen enhancements and compiled a beautiful new PDF.",
+            downloadPdf: "Download PDF",
+            generatingPdf: "Generating PDF...",
+            loadingPdfEngine: "Loading PDF Engine...",
+            backToReview: "Back to Review",
+            errorUpload: "Please upload a PDF file.",
+            errorAnalyze: "Failed to analyze CV. Please try again."
+        },
+        pdf: {
+            summary: "Professional Summary",
+            experience: "Experience",
+            skills: "Core Competencies",
+            filename: "Enhanced_CV.pdf"
+        }
+    },
+    pt: {
+        app: {
+            title: "Melhore seu CV com",
+            subtitle: "Precisão de IA",
+            description: "Faça o upload do seu currículo, diga-nos qual é o seu cargo dos sonhos e deixe nossa inteligência artificial adaptar sua experiência para se adequar perfeitamente ao que os recrutadores procuram.",
+            step1: "1. Faça o upload do seu CV atual (PDF)",
+            dragDrop: "Arraste e solte o seu PDF aqui",
+            browse: "ou clique para procurar no seu computador",
+            step2: "2. Qual é o seu objetivo de carreira?",
+            objectivePlaceholder: "ex: 'Quero me candidatar para uma vaga de Engenheiro Frontend Sênior em uma Fintech com foco em React e otimização de performance.'",
+            analyzeBtn: "Analisar e Aperfeiçoar Meu CV",
+            scanning: "A IA está escaneando o seu CV...",
+            matching: "Relacionando a sua experiência com",
+            summary: "Resumo Profissional",
+            current: "Atual",
+            suggestion: "Sugestão da IA",
+            decline: "Recusar",
+            accept: "Aceitar Sugestão",
+            tailored: "Tópicos Adaptados",
+            editManually: "Editar manualmente",
+            applyToCv: "Aplicar ao CV",
+            generateBtn: "Gerar CV Aperfeiçoado",
+            cvReady: "O seu CV está Pronto!",
+            compiledMsg: "Aplicamos todas as melhorias escolhidas e compilamos um novo PDF incrível.",
+            downloadPdf: "Baixar PDF",
+            generatingPdf: "Gerando PDF...",
+            loadingPdfEngine: "Carregando Mecanismo de PDF...",
+            backToReview: "Voltar para Revisão",
+            errorUpload: "Por favor, envie um arquivo PDF.",
+            errorAnalyze: "Falha ao analisar o CV. Por favor, tente novamente."
+        },
+        pdf: {
+            summary: "Resumo Profissional",
+            experience: "Experiência",
+            skills: "Competências Principais",
+            filename: "CV_Aperfeicoado.pdf"
+        }
+    }
+};
