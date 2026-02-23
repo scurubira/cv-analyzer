@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    image: node:latest
+    working_dir: /app
+    ports:
+      - "8004:3000"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
