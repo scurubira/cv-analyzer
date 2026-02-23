@@ -13,4 +13,5 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
-    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    command: sh -c "npm install @google/genai --save --legacy-peer-deps && npm install --legacy-peer-deps && npm run dev"
