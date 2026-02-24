@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { UploadCloud, FileText, ArrowRight, Sparkles, Check, X, RefreshCw, FileDown, Globe } from "lucide-react";
 import dynamic from "next/dynamic";
 import { dictionaries, Language } from "../i18n/dictionaries";
@@ -31,6 +31,10 @@ export default function Home() {
   const [objective, setObjective] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [insights, setInsights] = useState<InsightData | null>(null);
+  const [selections, setSelections] = useState<{
+    summary: 'accepted' | 'declined' | null;
+    experiences: Record<number, 'accepted' | 'declined' | null>;
+  }>({ summary: null, experiences: {} });
   const [lang, setLang] = useState<Language>('pt');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +89,7 @@ export default function Home() {
 
       const data = await res.json();
       setInsights(data.insights);
+      setSelections({ summary: null, experiences: {} });
       setPhase('review');
     } catch (error) {
       console.error(error);
@@ -96,6 +101,32 @@ export default function Home() {
   const toggleLanguage = () => {
     setLang(prev => prev === 'en' ? 'pt' : 'en');
   };
+
+  const handleSelectSummary = (status: 'accepted' | 'declined') => {
+    setSelections(prev => ({ ...prev, summary: status }));
+  };
+
+  const handleSelectExperience = (id: number, status: 'accepted' | 'declined') => {
+    setSelections(prev => ({
+      ...prev,
+      experiences: { ...prev.experiences, [id]: status }
+    }));
+  };
+
+  const exportData = useMemo(() => {
+    if (!insights) return null;
+    return {
+      ...insights,
+      summary: {
+        ...insights.summary,
+        suggested: selections.summary === 'declined' ? insights.summary.original : insights.summary.suggested
+      },
+      experiences: insights.experiences.map(exp => ({
+        ...exp,
+        suggestedBullets: selections.experiences[exp.id] === 'declined' ? exp.originalBullets : exp.suggestedBullets
+      }))
+    };
+  }, [insights, selections]);
 
   return (
     <main className="container relative">
@@ -213,8 +244,20 @@ export default function Home() {
               </div>
             </div>
             <div className="action-bar mt-4 flex gap-4">
-              <button className="btn-outline flex-1"><X size={16} /> {t.decline}</button>
-              <button className="btn-success flex-1"><Check size={16} /> {t.accept}</button>
+              <button
+                className={`btn-outline flex-1 ${selections.summary === 'declined' ? 'opacity-50' : ''}`}
+                style={selections.summary === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
+                onClick={() => handleSelectSummary('declined')}
+              >
+                <X size={16} /> {t.decline}
+              </button>
+              <button
+                className={`btn-success flex-1 ${selections.summary === 'accepted' ? 'opacity-50' : ''}`}
+                style={selections.summary === 'accepted' ? { transform: 'scale(0.98)' } : {}}
+                onClick={() => handleSelectSummary('accepted')}
+              >
+                <Check size={16} /> {selections.summary === 'accepted' ? 'Accepted' : t.accept}
+              </button>
             </div>
           </div>
 
@@ -234,8 +277,20 @@ export default function Home() {
                 </div>
               </div>
               <div className="action-bar mt-4 flex gap-4">
-                <button className="btn-outline flex-1"><RefreshCw size={16} /> {t.editManually}</button>
-                <button className="btn-success flex-1"><Check size={16} /> {t.applyToCv}</button>
+                <button
+                  className={`btn-outline flex-1 ${selections.experiences[exp.id] === 'declined' ? 'opacity-50' : ''}`}
+                  style={selections.experiences[exp.id] === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
+                  onClick={() => handleSelectExperience(exp.id, 'declined')}
+                >
+                  <X size={16} /> {t.decline}
+                </button>
+                <button
+                  className={`btn-success flex-1 ${selections.experiences[exp.id] === 'accepted' ? 'opacity-50' : ''}`}
+                  style={selections.experiences[exp.id] === 'accepted' ? { transform: 'scale(0.98)' } : {}}
+                  onClick={() => handleSelectExperience(exp.id, 'accepted')}
+                >
+                  <Check size={16} /> {selections.experiences[exp.id] === 'accepted' ? 'Accepted' : t.applyToCv}
+                </button>
               </div>
             </div>
           ))}
@@ -256,7 +311,7 @@ export default function Home() {
           <h2 className="mb-4">{t.cvReady}</h2>
           <p className="subtitle mb-8">{t.compiledMsg}</p>
 
-          <PDFExportButton insights={insights} objective={objective} lang={lang} />
+          <PDFExportButton insights={exportData} objective={objective} lang={lang} />
 
           <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
             {t.backToReview}
