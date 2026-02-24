@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import pdfParse from 'pdf-parse';
-import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 
 export async function POST(req: Request) {
     try {
@@ -21,19 +21,17 @@ export async function POST(req: Request) {
         const pdfData = await pdfParse(buffer);
         const text = pdfData.text;
 
-        // 3. Initialize Gemini Client
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            console.error("GEMINI_API_KEY is not defined in the environment.");
-            return NextResponse.json({ error: 'Server configuration error: Missing API Key' }, { status: 500 });
-        }
+        // 3. Initialize OpenAI Client pointing to local vLLM Server
+        const openai = new OpenAI({
+            baseURL: 'http://llm:8000/v1',
+            apiKey: 'sk-local', // required but ignored by vLLM
+        });
 
-        const ai = new GoogleGenAI({ apiKey });
         const targetOutputLanguage = language === 'en' ? 'English' : 'Brazilian Portuguese';
 
         const prompt = `
         You are an expert Tech Recruiter and CV Optimizer.
-        I will provide you with a candidate's parsed CV text and their career objective.
+        Analyze the candidate's CV text and their career objective.
         Your task is to analyze their CV and suggest improvements to tailor it to their objective.
         
         The career objective is: ${objective}
@@ -41,68 +39,47 @@ export async function POST(req: Request) {
         
         CV TEXT:
         ${text}
-        
-        Return the result strictly adhering to the JSON schema requested.
+
+        RETURN YOUR RESPONSE ONLY AS A STRICTLY VALID JSON OBJECT MATCHING EXACTLY THIS SCHEMA. 
+        DO NOT INCLUDE ANY MARKDOWN FORMATTING OR EXTRA TEXT OUTSIDE THE JSON.
+        {
+          "summary": {
+            "original": "The original summary extracted from the CV text.",
+            "suggested": "A highly tailored and improved summary matching the target objective."
+          },
+          "experiences": [
+            {
+              "id": 1,
+              "company": "Company Name",
+              "title": "Job Title",
+              "originalBullets": ["Original bullet 1", "Original bullet 2"],
+              "suggestedBullets": ["Tailored bullet 1 highlighting impact", "Tailored bullet 2 focusing on objective"]
+            }
+          ],
+          "skills": {
+            "original": ["Skill 1", "Skill 2"],
+            "suggested": ["Skill 1", "Skill 2", "Missing Skill relevant to objective"]
+          }
+        }
         `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        summary: {
-                            type: "OBJECT",
-                            properties: {
-                                original: { type: "STRING" },
-                                suggested: { type: "STRING" }
-                            }
-                        },
-                        experiences: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    id: { type: "INTEGER" },
-                                    company: { type: "STRING" },
-                                    title: { type: "STRING" },
-                                    originalBullets: {
-                                        type: "ARRAY",
-                                        items: { type: "STRING" }
-                                    },
-                                    suggestedBullets: {
-                                        type: "ARRAY",
-                                        items: { type: "STRING" }
-                                    }
-                                }
-                            }
-                        },
-                        skills: {
-                            type: "OBJECT",
-                            properties: {
-                                original: {
-                                    type: "ARRAY",
-                                    items: { type: "STRING" }
-                                },
-                                suggested: {
-                                    type: "ARRAY",
-                                    items: { type: "STRING" }
-                                }
-                            }
-                        }
-                    },
-                    required: ["summary", "experiences", "skills"]
-                }
-            }
+        const response = await openai.chat.completions.create({
+            model: 'distil-labs/Distil-Rost-Resume-Llama-3.2-3B-Instruct',
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.2, // Lower temperature for more deterministic JSON
         });
 
-        if (!response.text) {
-            throw new Error("Empty response from Gemini");
-        }
+        const rawOutput = response.choices[0]?.message?.content || "";
 
-        const insights = JSON.parse(response.text);
+        let insights;
+        try {
+            // Handle edge cases where the local model might wrap in markdown
+            const cleanedJson = rawOutput.replace(/```json/g, "").replace(/```/g, "").trim();
+            insights = JSON.parse(cleanedJson);
+        } catch (e) {
+            console.error("Failed to parse JSON from local model:", rawOutput);
+            throw new Error("Invalid format from local AI model");
+        }
 
         return NextResponse.json({
             success: true,

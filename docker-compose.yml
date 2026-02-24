@@ -13,5 +13,21 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-    command: sh -c "npm install @google/genai --save --legacy-peer-deps && npm install --legacy-peer-deps && npm run dev"
+    command: sh -c "npm install openai --save --legacy-peer-deps && npm install --legacy-peer-deps && npm run dev"
+    depends_on:
+      - llm
+
+  llm:
+    image: vllm/vllm-openai:latest
+    ports:
+      - "8007:8000"
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
+    command: --model distil-labs/Distil-Rost-Resume-Llama-3.2-3B-Instruct --host 0.0.0.0 --port 8007 --max-model-len 4096 --dtype auto
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
