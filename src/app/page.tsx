@@ -40,6 +40,15 @@ export default function Home() {
   // Output configuration state
   const [cvLang, setCvLang] = useState<Language>('pt');
   const [filename, setFilename] = useState("");
+  const [colorTheme, setColorTheme] = useState('slate');
+
+  const THEMES_PREVIEW = [
+    { id: 'slate', color: '#1E293B', ring: '#38BDF8' },
+    { id: 'emerald', color: '#064E3B', ring: '#34D399' },
+    { id: 'violet', color: '#4C1D95', ring: '#A78BFA' },
+    { id: 'rose', color: '#881337', ring: '#FB7185' },
+    { id: 'amber', color: '#78350F', ring: '#FBBF24' },
+  ];
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = dictionaries[lang].app;
@@ -232,6 +241,28 @@ export default function Home() {
                 />
               </div>
             </div>
+
+            <div className="mt-8">
+              <label className="text-xl font-bold text-white mb-6 block text-center">{t.colorLabel}</label>
+              <div className="flex flex-wrap justify-center gap-8">
+                {THEMES_PREVIEW.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setColorTheme(theme.id)}
+                    className={`rounded-full flex items-center justify-center w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] transition-all duration-300 ${colorTheme === theme.id ? 'scale-110 shadow-[0_0_25px_rgba(255,255,255,0.4)] ring-8 ring-offset-8 ring-offset-[#0f172a]' : 'hover:scale-110 shadow-xl'}`}
+                    style={{
+                      backgroundColor: theme.color,
+                      ...(colorTheme === theme.id ? { borderColor: theme.ring, ringColor: theme.ring } : {})
+                    }}
+                    title={theme.id}
+                  >
+                    <span className="text-sm font-bold capitalize" style={{ color: theme.color }}>
+                      {theme.id}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="text-center mt-8">
@@ -349,6 +380,7 @@ export default function Home() {
             objective={objective}
             lang={cvLang}
             customFilename={filename || dictionaries[cvLang].pdf.filename}
+            colorTheme={colorTheme}
           />
 
           <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>

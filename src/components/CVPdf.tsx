@@ -6,36 +6,38 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         fontFamily: 'Helvetica',
-        paddingLeft: '32%', // Reserve space for the left sidebar
+        paddingLeft: '28%', // Reserve space for the left sidebar
     },
     sidebar: {
         position: 'absolute',
         left: 0,
         top: 0,
         bottom: 0,
-        width: '32%',
-        backgroundColor: '#1E293B',
-        color: '#FFFFFF',
-        padding: 30,
+        width: '28%',
+        paddingTop: 30,
+        paddingBottom: 30,
+        paddingLeft: 24,
+        paddingRight: 15,
         flexDirection: 'column',
     },
     mainBody: {
         width: '100%',
-        padding: 40,
+        paddingTop: 30,
+        paddingBottom: 30,
+        paddingRight: 30,
+        paddingLeft: 18,
         backgroundColor: '#F8FAFC',
     },
     name: {
-        fontSize: 26,
+        fontSize: 22,
         fontWeight: 700,
-        color: '#FFFFFF',
-        marginBottom: 8,
-        letterSpacing: 1,
+        marginBottom: 6,
+        letterSpacing: 0.5,
     },
     title: {
-        fontSize: 14,
-        color: '#38BDF8',
+        fontSize: 11,
         fontWeight: 600,
-        marginBottom: 30,
+        marginBottom: 24,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
@@ -43,15 +45,13 @@ const styles = StyleSheet.create({
         marginBottom: 25,
     },
     sidebarSectionTitle: {
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: 700,
-        color: '#94A3B8',
-        marginBottom: 15,
+        marginBottom: 12,
         textTransform: 'uppercase',
         letterSpacing: 1,
         borderBottomWidth: 1,
-        borderBottomColor: '#334155',
-        paddingBottom: 5,
+        paddingBottom: 4,
     },
     mainSectionTitle: {
         fontSize: 16,
@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     },
     expCompany: {
         fontSize: 11,
-        color: '#38BDF8',
         fontWeight: 600,
         marginBottom: 6,
     },
@@ -113,12 +112,21 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     skillItem: {
-        fontSize: 10,
-        color: '#E2E8F0',
-        marginBottom: 6,
-        lineHeight: 1.4,
+        fontSize: 9,
+        marginBottom: 5,
+        lineHeight: 1.5,
     }
 });
+
+export type CVThemeColor = 'slate' | 'emerald' | 'violet' | 'rose' | 'amber';
+
+const THEMES: Record<CVThemeColor, any> = {
+    slate: { bg: '#1E293B', text: '#F8FAFC', accent: '#38BDF8', sectionBorder: '#334155', name: '#FFFFFF', sectionText: '#94A3B8' },
+    emerald: { bg: '#064E3B', text: '#ECFDF5', accent: '#34D399', sectionBorder: '#065F46', name: '#FFFFFF', sectionText: '#A7F3D0' },
+    violet: { bg: '#4C1D95', text: '#F5F3FF', accent: '#A78BFA', sectionBorder: '#5B21B6', name: '#FFFFFF', sectionText: '#C4B5FD' },
+    rose: { bg: '#881337', text: '#FFF1F2', accent: '#FB7185', sectionBorder: '#9F1239', name: '#FFFFFF', sectionText: '#FECDD3' },
+    amber: { bg: '#78350F', text: '#FFFBEB', accent: '#FBBF24', sectionBorder: '#92400E', name: '#FFFFFF', sectionText: '#FDE68A' },
+};
 
 interface CVPdfProps {
     data: {
@@ -138,56 +146,61 @@ interface CVPdfProps {
         experience: string;
         skills: string;
     };
+    colorTheme?: CVThemeColor;
 }
 
-export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, labels }) => (
-    <Document>
-        <Page size="A4" style={styles.page}>
-            {/* Sidebar */}
-            <View style={styles.sidebar}>
-                <Text style={styles.name}>{name}</Text>
-                <Text style={styles.title}>{targetRole}</Text>
+export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, labels, colorTheme = 'slate' }) => {
+    const tConfig = THEMES[colorTheme as CVThemeColor] || THEMES.slate;
 
-                <View style={styles.section}>
-                    <Text style={styles.sidebarSectionTitle}>{labels.skills}</Text>
-                    <View style={styles.skillsContainer}>
-                        {data.skills.suggested.map((skill, idx) => (
-                            <Text key={idx} style={styles.skillItem}>• {skill}</Text>
+    return (
+        <Document>
+            <Page size="A4" style={styles.page}>
+                {/* Sidebar */}
+                <View style={[styles.sidebar, { backgroundColor: tConfig.bg, color: tConfig.text }]}>
+                    <Text style={[styles.name, { color: tConfig.name }]}>{name}</Text>
+                    <Text style={[styles.title, { color: tConfig.accent }]}>{targetRole}</Text>
+
+                    <View style={styles.section}>
+                        <Text style={[styles.sidebarSectionTitle, { color: tConfig.sectionText, borderBottomColor: tConfig.sectionBorder }]}>{labels.skills}</Text>
+                        <View style={styles.skillsContainer}>
+                            {data.skills.suggested.map((skill: React.ReactNode, idx: React.Key | null | undefined) => (
+                                <Text key={idx} style={[styles.skillItem, { color: tConfig.text }]}>• {skill}</Text>
+                            ))}
+                        </View>
+                    </View>
+                </View>
+
+                {/* Main Content */}
+                <View style={styles.mainBody}>
+                    {/* Summary Section */}
+                    <View style={styles.section}>
+                        <Text style={styles.mainSectionTitle}>{labels.summary}</Text>
+                        <Text style={styles.bodyText}>{data.summary.suggested}</Text>
+                    </View>
+
+                    {/* Experience Section */}
+                    <View style={styles.section}>
+                        <Text style={styles.mainSectionTitle}>{labels.experience}</Text>
+                        {data.experiences.map((exp) => (
+                            <View key={exp.id} style={styles.experienceItem}>
+                                <View style={styles.expHeader}>
+                                    <Text style={styles.expTitle}>{exp.title}</Text>
+                                </View>
+                                <Text style={[styles.expCompany, { color: tConfig.accent }]}>{exp.company}</Text>
+
+                                <View style={{ marginTop: 4 }}>
+                                    {exp.suggestedBullets.map((bullet: React.ReactNode, idx: React.Key | null | undefined) => (
+                                        <View key={idx} style={styles.bulletPoint}>
+                                            <View style={styles.bulletDot} />
+                                            <Text style={styles.bulletText}>{bullet}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
                         ))}
                     </View>
                 </View>
-            </View>
-
-            {/* Main Content */}
-            <View style={styles.mainBody}>
-                {/* Summary Section */}
-                <View style={styles.section}>
-                    <Text style={styles.mainSectionTitle}>{labels.summary}</Text>
-                    <Text style={styles.bodyText}>{data.summary.suggested}</Text>
-                </View>
-
-                {/* Experience Section */}
-                <View style={styles.section}>
-                    <Text style={styles.mainSectionTitle}>{labels.experience}</Text>
-                    {data.experiences.map((exp) => (
-                        <View key={exp.id} style={styles.experienceItem}>
-                            <View style={styles.expHeader}>
-                                <Text style={styles.expTitle}>{exp.title}</Text>
-                            </View>
-                            <Text style={styles.expCompany}>{exp.company}</Text>
-
-                            <View style={{ marginTop: 4 }}>
-                                {exp.suggestedBullets.map((bullet, idx) => (
-                                    <View key={idx} style={styles.bulletPoint}>
-                                        <View style={styles.bulletDot} />
-                                        <Text style={styles.bulletText}>{bullet}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
-                    ))}
-                </View>
-            </View>
-        </Page>
-    </Document>
-);
+            </Page>
+        </Document>
+    );
+};

@@ -5,13 +5,13 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { CVPdfDocument } from './CVPdf';
 import { dictionaries, Language } from '../i18n/dictionaries';
 
-export default function PDFExportButton({ insights, objective, lang, customFilename }: { insights: any, objective: string, lang: Language, customFilename?: string }) {
+export default function PDFExportButton({ insights, objective, lang, customFilename, colorTheme }: { insights: any, objective: string, lang: Language, customFilename?: string, colorTheme?: any }) {
     const t = dictionaries[lang].pdf;
     const tApp = dictionaries[lang].app;
 
     const document = useMemo(() => (
-        <CVPdfDocument data={insights} name="Applicant Name" targetRole={objective} labels={t} />
-    ), [insights, objective, t]);
+        <CVPdfDocument data={insights} name="Applicant Name" targetRole={objective} labels={t} colorTheme={colorTheme} />
+    ), [insights, objective, t, colorTheme]);
 
     return (
         <PDFDownloadLink
