@@ -5,7 +5,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { CVPdfDocument } from './CVPdf';
 import { dictionaries, Language } from '../i18n/dictionaries';
 
-export default function PDFExportButton({ insights, objective, lang }: { insights: any, objective: string, lang: Language }) {
+export default function PDFExportButton({ insights, objective, lang, customFilename }: { insights: any, objective: string, lang: Language, customFilename?: string }) {
     const t = dictionaries[lang].pdf;
     const tApp = dictionaries[lang].app;
 
@@ -16,7 +16,7 @@ export default function PDFExportButton({ insights, objective, lang }: { insight
     return (
         <PDFDownloadLink
             document={document}
-            fileName={t.filename}
+            fileName={customFilename || t.filename}
             style={{ textDecoration: 'none', display: 'block' }}
         >
             {({ blob, url, loading, error }: any) => {

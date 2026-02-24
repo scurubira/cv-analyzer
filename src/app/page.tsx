@@ -37,6 +37,10 @@ export default function Home() {
   }>({ summary: null, experiences: {} });
   const [lang, setLang] = useState<Language>('pt');
 
+  // Output configuration state
+  const [cvLang, setCvLang] = useState<Language>('pt');
+  const [filename, setFilename] = useState("");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = dictionaries[lang].app;
 
@@ -78,7 +82,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('objective', objective);
-      formData.append('language', lang);
+      formData.append('language', cvLang); // use cvLang instead of UI lang
 
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -201,6 +205,35 @@ export default function Home() {
             />
           </div>
 
+          <div className="input-group mt-8">
+            <label className="input-label">{t.step3}</label>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-xs text-[var(--glass-border)] mb-1 block">{t.cvLangLabel}</label>
+                <select
+                  className="textarea-input"
+                  style={{ minHeight: 'auto', padding: '0.8rem' }}
+                  value={cvLang}
+                  onChange={(e) => setCvLang(e.target.value as Language)}
+                >
+                  <option value="pt">Português (Brasil)</option>
+                  <option value="en">English (US)</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-[var(--glass-border)] mb-1 block">{t.filenameLabel}</label>
+                <input
+                  type="text"
+                  className="textarea-input"
+                  style={{ minHeight: 'auto', padding: '0.8rem' }}
+                  placeholder={dictionaries[cvLang].pdf.filename}
+                  value={filename}
+                  onChange={(e) => setFilename(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="text-center mt-8">
             <button
               className="btn-primary"
@@ -311,7 +344,12 @@ export default function Home() {
           <h2 className="mb-4">{t.cvReady}</h2>
           <p className="subtitle mb-8">{t.compiledMsg}</p>
 
-          <PDFExportButton insights={exportData} objective={objective} lang={lang} />
+          <PDFExportButton
+            insights={exportData}
+            objective={objective}
+            lang={cvLang}
+            customFilename={filename || dictionaries[cvLang].pdf.filename}
+          />
 
           <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
             {t.backToReview}

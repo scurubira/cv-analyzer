@@ -36,6 +36,12 @@ export async function POST(req: Request) {
         I will provide you with a candidate's parsed CV text and their career objective.
         Your task is to analyze their CV and suggest improvements to tailor it to their objective.
         
+        CRITICAL CONSTRAINT: The resulting CV MUST be extremely concise and punchy. Aim for brevity. 
+        It needs to comfortably fit within 1 to 2 pages maximum. 
+        - Remove fluffy or subjective language.
+        - Combine repetitive bullet points.
+        - Be direct and focus only on the most impactful achievements.
+        
         The career objective is: ${objective}
         The target language for the output MUST BE: ${targetOutputLanguage}.
         

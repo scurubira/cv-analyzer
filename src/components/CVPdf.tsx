@@ -5,92 +5,118 @@ const styles = StyleSheet.create({
     page: {
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
-        padding: 40,
         fontFamily: 'Helvetica',
+        paddingLeft: '32%', // Reserve space for the left sidebar
     },
-    header: {
-        marginBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-        paddingBottom: 10,
+    sidebar: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: '32%',
+        backgroundColor: '#1E293B',
+        color: '#FFFFFF',
+        padding: 30,
+        flexDirection: 'column',
+    },
+    mainBody: {
+        width: '100%',
+        padding: 40,
+        backgroundColor: '#F8FAFC',
     },
     name: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: 700,
-        color: '#111827',
+        color: '#FFFFFF',
+        marginBottom: 8,
+        letterSpacing: 1,
     },
     title: {
         fontSize: 14,
-        color: '#6366f1',
-        marginTop: 4,
+        color: '#38BDF8',
+        fontWeight: 600,
+        marginBottom: 30,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     section: {
-        marginTop: 20,
+        marginBottom: 25,
     },
-    sectionTitle: {
+    sidebarSectionTitle: {
+        fontSize: 14,
+        fontWeight: 700,
+        color: '#94A3B8',
+        marginBottom: 15,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        borderBottomWidth: 1,
+        borderBottomColor: '#334155',
+        paddingBottom: 5,
+    },
+    mainSectionTitle: {
         fontSize: 16,
         fontWeight: 700,
-        color: '#1F2937',
-        marginBottom: 8,
+        color: '#0F172A',
+        marginBottom: 15,
         textTransform: 'uppercase',
+        letterSpacing: 1,
+        borderBottomWidth: 2,
+        borderBottomColor: '#E2E8F0',
+        paddingBottom: 5,
     },
     bodyText: {
         fontSize: 10,
-        color: '#4B5563',
+        color: '#334155',
         lineHeight: 1.6,
     },
     experienceItem: {
-        marginBottom: 15,
+        marginBottom: 20,
     },
     expHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
+        alignItems: 'baseline',
+        marginBottom: 2,
     },
     expTitle: {
-        fontSize: 12,
-        fontWeight: 600,
-        color: '#111827',
+        fontSize: 13,
+        fontWeight: 700,
+        color: '#0F172A',
     },
     expCompany: {
         fontSize: 11,
-        color: '#6B7280',
-        fontStyle: 'italic',
+        color: '#38BDF8',
+        fontWeight: 600,
+        marginBottom: 6,
     },
     bulletPoint: {
         flexDirection: 'row',
-        marginBottom: 3,
-        paddingLeft: 10,
+        marginBottom: 4,
+        paddingLeft: 5,
     },
     bulletText: {
         fontSize: 10,
-        color: '#4B5563',
+        color: '#475569',
         lineHeight: 1.5,
         flex: 1,
     },
     bulletDot: {
         width: 3,
         height: 3,
-        backgroundColor: '#6B7280',
+        backgroundColor: '#94A3B8',
         borderRadius: 2,
         marginTop: 5,
-        marginRight: 6,
+        marginRight: 8,
     },
-    skillsSection: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginTop: 5,
+    skillsContainer: {
+        flexDirection: 'column',
+        gap: 8,
     },
-    skillBadge: {
-        backgroundColor: '#EEF2FF',
-        color: '#4F46E5',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
-        fontSize: 9,
-        fontWeight: 600,
-        marginRight: 5,
-        marginBottom: 5,
+    skillItem: {
+        fontSize: 10,
+        color: '#E2E8F0',
+        marginBottom: 6,
+        lineHeight: 1.4,
     }
 });
 
@@ -117,51 +143,51 @@ interface CVPdfProps {
 export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, labels }) => (
     <Document>
         <Page size="A4" style={styles.page}>
-
-            {/* Header Info */}
-            <View style={styles.header}>
+            {/* Sidebar */}
+            <View style={styles.sidebar}>
                 <Text style={styles.name}>{name}</Text>
                 <Text style={styles.title}>{targetRole}</Text>
-            </View>
 
-            {/* Summary Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{labels.summary}</Text>
-                <Text style={styles.bodyText}>{data.summary.suggested}</Text>
-            </View>
-
-            {/* Experience Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{labels.experience}</Text>
-                {data.experiences.map((exp) => (
-                    <View key={exp.id} style={styles.experienceItem}>
-                        <View style={styles.expHeader}>
-                            <Text style={styles.expTitle}>{exp.title}</Text>
-                        </View>
-                        <Text style={styles.expCompany}>{exp.company}</Text>
-
-                        <View style={{ marginTop: 6 }}>
-                            {exp.suggestedBullets.map((bullet, idx) => (
-                                <View key={idx} style={styles.bulletPoint}>
-                                    <View style={styles.bulletDot} />
-                                    <Text style={styles.bulletText}>{bullet}</Text>
-                                </View>
-                            ))}
-                        </View>
+                <View style={styles.section}>
+                    <Text style={styles.sidebarSectionTitle}>{labels.skills}</Text>
+                    <View style={styles.skillsContainer}>
+                        {data.skills.suggested.map((skill, idx) => (
+                            <Text key={idx} style={styles.skillItem}>• {skill}</Text>
+                        ))}
                     </View>
-                ))}
-            </View>
-
-            {/* Skills Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{labels.skills}</Text>
-                <View style={styles.skillsSection}>
-                    {data.skills.suggested.map((skill, idx) => (
-                        <Text key={idx} style={styles.skillBadge}>{skill}</Text>
-                    ))}
                 </View>
             </View>
 
+            {/* Main Content */}
+            <View style={styles.mainBody}>
+                {/* Summary Section */}
+                <View style={styles.section}>
+                    <Text style={styles.mainSectionTitle}>{labels.summary}</Text>
+                    <Text style={styles.bodyText}>{data.summary.suggested}</Text>
+                </View>
+
+                {/* Experience Section */}
+                <View style={styles.section}>
+                    <Text style={styles.mainSectionTitle}>{labels.experience}</Text>
+                    {data.experiences.map((exp) => (
+                        <View key={exp.id} style={styles.experienceItem}>
+                            <View style={styles.expHeader}>
+                                <Text style={styles.expTitle}>{exp.title}</Text>
+                            </View>
+                            <Text style={styles.expCompany}>{exp.company}</Text>
+
+                            <View style={{ marginTop: 4 }}>
+                                {exp.suggestedBullets.map((bullet, idx) => (
+                                    <View key={idx} style={styles.bulletPoint}>
+                                        <View style={styles.bulletDot} />
+                                        <Text style={styles.bulletText}>{bullet}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    ))}
+                </View>
+            </View>
         </Page>
     </Document>
 );
