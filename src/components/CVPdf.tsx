@@ -6,33 +6,40 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         fontFamily: 'Helvetica',
-        paddingLeft: '28%', // Reserve space for the left sidebar
+        paddingLeft: '42%', // Reserve space for the left sidebar
     },
     sidebar: {
         position: 'absolute',
         left: 0,
         top: 0,
         bottom: 0,
-        width: '28%',
-        paddingTop: 30,
-        paddingBottom: 30,
-        paddingLeft: 24,
-        paddingRight: 15,
+        width: '42%',
+        paddingTop: 20,
+        paddingBottom: 20,
+        paddingLeft: 16,
+        paddingRight: 10,
         flexDirection: 'column',
+        textAlign: 'left',
     },
     mainBody: {
         width: '100%',
-        paddingTop: 30,
-        paddingBottom: 30,
-        paddingRight: 30,
-        paddingLeft: 18,
+        paddingTop: 20,
+        paddingBottom: 20,
+        paddingRight: 20,
+        paddingLeft: 8,
         backgroundColor: '#F8FAFC',
     },
     name: {
-        fontSize: 22,
+        fontSize: 14,
         fontWeight: 700,
-        marginBottom: 6,
+        marginBottom: 2,
         letterSpacing: 0.5,
+    },
+    targetTitles: {
+        fontSize: 10,
+        fontWeight: 700,
+        marginBottom: 15,
+        opacity: 0.9,
     },
     title: {
         fontSize: 11,
@@ -42,7 +49,7 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     section: {
-        marginBottom: 25,
+        marginBottom: 15,
     },
     sidebarSectionTitle: {
         fontSize: 11,
@@ -67,10 +74,10 @@ const styles = StyleSheet.create({
     bodyText: {
         fontSize: 10,
         color: '#334155',
-        lineHeight: 1.6,
+        lineHeight: 1.4,
     },
     experienceItem: {
-        marginBottom: 20,
+        marginBottom: 12,
     },
     expHeader: {
         flexDirection: 'row',
@@ -90,13 +97,13 @@ const styles = StyleSheet.create({
     },
     bulletPoint: {
         flexDirection: 'row',
-        marginBottom: 4,
+        marginBottom: 2,
         paddingLeft: 5,
     },
     bulletText: {
         fontSize: 10,
         color: '#475569',
-        lineHeight: 1.5,
+        lineHeight: 1.3,
         flex: 1,
     },
     bulletDot: {
@@ -114,7 +121,17 @@ const styles = StyleSheet.create({
     skillItem: {
         fontSize: 9,
         marginBottom: 5,
-        lineHeight: 1.5,
+        lineHeight: 1.2,
+    },
+    contactSection: {
+        marginBottom: 25,
+        borderBottomWidth: 1,
+        paddingBottom: 15,
+    },
+    contactItemText: {
+        fontSize: 9,
+        marginBottom: 6,
+        lineHeight: 1.1,
     }
 });
 
@@ -131,12 +148,26 @@ const THEMES: Record<CVThemeColor, any> = {
 interface CVPdfProps {
     data: {
         summary: { suggested: string };
+        contact?: {
+            email?: string;
+            phone?: string;
+            location?: string;
+            linkedin?: string;
+        };
         experiences: {
             id: number;
             company: string;
             title: string;
             suggestedBullets: string[];
         }[];
+        education?: {
+            degree: string;
+            institution: string;
+            year: string;
+        }[];
+        certifications?: string[];
+        languages?: string[];
+        targetTitles?: string[];
         skills: { suggested: string[] };
     };
     name: string;
@@ -145,6 +176,9 @@ interface CVPdfProps {
         summary: string;
         experience: string;
         skills: string;
+        education: string;
+        languages: string;
+        certifications: string;
     };
     colorTheme?: CVThemeColor;
 }
@@ -158,7 +192,20 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                 {/* Sidebar */}
                 <View style={[styles.sidebar, { backgroundColor: tConfig.bg, color: tConfig.text }]}>
                     <Text style={[styles.name, { color: tConfig.name }]}>{name}</Text>
-                    <Text style={[styles.title, { color: tConfig.accent }]}>{targetRole}</Text>
+                    {data.targetTitles && data.targetTitles.length > 0 && (
+                        <Text style={[styles.targetTitles, { color: tConfig.name }]}>
+                            {data.targetTitles.join(' | ')}
+                        </Text>
+                    )}
+
+                    {data.contact && (
+                        <View style={[styles.contactSection, { borderBottomColor: tConfig.sectionBorder }]}>
+                            {data.contact.location && <Text style={styles.contactItemText}>{data.contact.location}</Text>}
+                            {data.contact.phone && <Text style={styles.contactItemText}>{data.contact.phone}</Text>}
+                            {data.contact.email && <Text style={styles.contactItemText}>{data.contact.email}</Text>}
+                            {data.contact.linkedin && <Text style={styles.contactItemText}>{data.contact.linkedin}</Text>}
+                        </View>
+                    )}
 
                     <View style={styles.section}>
                         <Text style={[styles.sidebarSectionTitle, { color: tConfig.sectionText, borderBottomColor: tConfig.sectionBorder }]}>{labels.skills}</Text>
@@ -168,10 +215,22 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                             ))}
                         </View>
                     </View>
+
+                    {data.languages && data.languages.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={[styles.sidebarSectionTitle, { color: tConfig.sectionText, borderBottomColor: tConfig.sectionBorder }]}>{labels.languages}</Text>
+                            <View style={styles.skillsContainer}>
+                                {data.languages.map((lang: React.ReactNode, idx: React.Key | null | undefined) => (
+                                    <Text key={idx} style={[styles.skillItem, { color: tConfig.text }]}>• {lang}</Text>
+                                ))}
+                            </View>
+                        </View>
+                    )}
                 </View>
 
                 {/* Main Content */}
                 <View style={styles.mainBody}>
+
                     {/* Summary Section */}
                     <View style={styles.section}>
                         <Text style={styles.mainSectionTitle}>{labels.summary}</Text>
@@ -199,6 +258,38 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                             </View>
                         ))}
                     </View>
+
+                    {/* Education Section */}
+                    {data.education && data.education.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.mainSectionTitle}>{labels.education}</Text>
+                            {data.education.map((edu, idx) => (
+                                <View key={idx} style={styles.experienceItem}>
+                                    <View style={styles.expHeader}>
+                                        <Text style={styles.expTitle}>{edu.degree}</Text>
+                                    </View>
+                                    <Text style={[styles.expCompany, { color: tConfig.accent }]}>
+                                        {edu.institution} {edu.year ? ` • ${edu.year}` : ''}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
+                    {/* Certifications Section */}
+                    {data.certifications && data.certifications.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.mainSectionTitle}>{labels.certifications}</Text>
+                            <View style={{ marginTop: 4 }}>
+                                {data.certifications.map((cert: React.ReactNode, idx: React.Key | null | undefined) => (
+                                    <View key={idx} style={styles.bulletPoint}>
+                                        <View style={styles.bulletDot} />
+                                        <Text style={styles.bulletText}>{cert}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    )}
                 </View>
             </Page>
         </Document>

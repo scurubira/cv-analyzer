@@ -10,7 +10,7 @@ export default function PDFExportButton({ insights, objective, lang, customFilen
     const tApp = dictionaries[lang].app;
 
     const document = useMemo(() => (
-        <CVPdfDocument data={insights} name="Applicant Name" targetRole={objective} labels={t} colorTheme={colorTheme} />
+        <CVPdfDocument data={insights} name={insights.name || "Applicant Name"} targetRole={objective} labels={t} colorTheme={colorTheme} />
     ), [insights, objective, t, colorTheme]);
 
     return (

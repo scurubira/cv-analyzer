@@ -41,6 +41,11 @@ export async function POST(req: Request) {
         - Remove fluffy or subjective language.
         - Combine repetitive bullet points.
         - Be direct and focus only on the most impactful achievements.
+        - Extract contact information (email, phone, location/address, LinkedIn) into the contact field.
+        - Extract any known languages spoken by the applicant and return them in the languages array.
+        - Extract education/academic history and return them in the education array.
+        - Extract continuous education, courses, and certifications and return them in the certifications array.
+        - Suggest 1-3 prominent job titles that the applicant is highly qualified for based strictly on their CV experience. Return these in the targetTitles array.
         
         The career objective is: ${objective}
         The target language for the output MUST BE: ${targetOutputLanguage}.
@@ -59,11 +64,25 @@ export async function POST(req: Request) {
         responseSchema: {
           type: "OBJECT",
           properties: {
+            name: { type: "STRING" },
+            targetTitles: {
+              type: "ARRAY",
+              items: { type: "STRING" }
+            },
             summary: {
               type: "OBJECT",
               properties: {
                 original: { type: "STRING" },
                 suggested: { type: "STRING" }
+              }
+            },
+            contact: {
+              type: "OBJECT",
+              properties: {
+                email: { type: "STRING" },
+                phone: { type: "STRING" },
+                location: { type: "STRING" },
+                linkedin: { type: "STRING" }
               }
             },
             experiences: {

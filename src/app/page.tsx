@@ -25,6 +25,19 @@ type InsightData = {
   skills: { original: string[], suggested: string[] };
 };
 
+const DonateButton = () => (
+  <div className="mt-8 flex justify-center">
+    <form action="https://www.paypal.com/donate" method="post" target="_top">
+      <input type="hidden" name="business" value="TNX4CKHL52SDW" />
+      <input type="hidden" name="no_recurring" value="0" />
+      <input type="hidden" name="item_name" value="Seu apoio acelera código aberto. Doe e impulsione inovações que beneficiam milhões de devs e transformam. Muito Obrigado !" />
+      <input type="hidden" name="currency_code" value="BRL" />
+      <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+      <img alt="" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
+    </form>
+  </div>
+);
+
 export default function Home() {
   const [phase, setPhase] = useState<'upload' | 'analyzing' | 'review' | 'export'>('upload');
   const [file, setFile] = useState<File | null>(null);
@@ -156,8 +169,7 @@ export default function Home() {
       {/* Header */}
       <div className={`text-center mt-8 mb-8 animate-slide-up ${phase !== 'upload' ? 'header-shrink' : ''}`} style={{ animationDelay: "0.1s" }}>
         <h1 style={{ fontSize: phase === 'upload' ? "3.5rem" : "2.5rem", transition: "all 0.5s ease" }}>
-          {t.title} <br />
-          <span className="text-gradient hover-glow">{t.subtitle}</span>
+          {t.title} <br /><span className="text-gradient hover-glow">{t.subtitle}</span>
         </h1>
         {phase === 'upload' && (
           <p className="subtitle" style={{ maxWidth: "600px", margin: "1rem auto" }}>
@@ -276,6 +288,7 @@ export default function Home() {
               {t.analyzeBtn}
               <ArrowRight size={20} style={{ marginLeft: "auto" }} />
             </button>
+            <DonateButton />
           </div>
         </div>
       )}
@@ -386,8 +399,17 @@ export default function Home() {
           <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
             {t.backToReview}
           </button>
+
+          <DonateButton />
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="w-full text-center py-6 mt-8 border-t border-[var(--glass-border)] text-[var(--glass-text)]">
+        <p className="text-sm">
+          powered by <a href="http://www.benstech.com.br" target="_blank" rel="noopener noreferrer" className="font-semibold tracking-wide text-[var(--accent)] hover:opacity-80 transition-opacity">Benstech</a>
+        </p>
+      </footer>
     </main>
   );
 }

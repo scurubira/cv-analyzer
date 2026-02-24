@@ -3,8 +3,8 @@ export type Language = 'en' | 'pt';
 export const dictionaries = {
     en: {
         app: {
-            title: "Elevate Your CV with",
-            subtitle: "AI Precision",
+            title: "Benstech",
+            subtitle: " Resume AI Analyzer",
             description: "Upload your resume, tell us your dream role, and let our AI tailor your experience to perfectly match what recruiters are looking for.",
             step1: "1. Upload your current CV (PDF)",
             dragDrop: "Drag & Drop your PDF here",
@@ -40,13 +40,16 @@ export const dictionaries = {
             summary: "Professional Summary",
             experience: "Experience",
             skills: "Core Competencies",
+            education: "Education",
+            languages: "Languages",
+            certifications: "Courses & Certifications",
             filename: "Enhanced_CV.pdf"
         }
     },
     pt: {
         app: {
-            title: "Melhore seu CV com",
-            subtitle: "Precisão de IA",
+            title: "Benstech",
+            subtitle: "Resume AI Analyzer",
             description: "Faça o upload do seu currículo, diga-nos qual é o seu cargo dos sonhos e deixe nossa inteligência artificial adaptar sua experiência para se adequar perfeitamente ao que os recrutadores procuram.",
             step1: "1. Faça o upload do seu CV atual (PDF)",
             dragDrop: "Arraste e solte o seu PDF aqui",
@@ -82,6 +85,9 @@ export const dictionaries = {
             summary: "Resumo Profissional",
             experience: "Experiência",
             skills: "Competências Principais",
+            education: "Formação",
+            languages: "Idiomas",
+            certifications: "Cursos e Certificações",
             filename: "CV_Aperfeicoado.pdf"
         }
     }
