@@ -4,17 +4,30 @@ import { GoogleGenAI } from '@google/genai';
 
 // ─── Shared JSON prompt (no schema enforcement for non-Gemini providers) ───────
 function buildPrompt(objective: string, language: string, text: string): string {
-  const targetOutputLanguage = language === 'en' ? 'English' : 'Brazilian Portuguese';
+  const languageMap: Record<string, string> = {
+    'en': 'English',
+    'pt': 'Brazilian Portuguese',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German'
+  };
+  const targetOutputLanguage = languageMap[language] || 'English';
+
   return `
     You are an expert Tech Recruiter and CV Optimizer.
     I will provide you with a candidate's parsed CV text and their career objective.
-    Your task is to analyze their CV and suggest improvements to tailor it to their objective.
+    Your task is to analyze and translate their entire CV to ${targetOutputLanguage}, and suggest improvements.
     
-    CRITICAL CONSTRAINT: The resulting CV MUST be extremely concise and punchy. Aim for brevity. 
-    It needs to comfortably fit within 1 to 2 pages maximum. 
-    - Remove fluffy or subjective language.
-    - Combine repetitive bullet points.
-    - Be direct and focus only on the most impactful achievements.
+    CRITICAL TRANSLATION CONSTRAINT:
+    You MUST translate the ENTIRE OUTPUT into ${targetOutputLanguage}.
+    This includes ALL "original" fields, such as "originalBullets", "summary.original", "skills.original", as well as the applicant's name, previous job titles, company descriptions, education, contact info labels, and any other extracted part. DO NOT leave ANY part of the JSON output in the original language of the parsed CV.
+    
+    CRITICAL CONTENT CONSTRAINT:
+    - Keep bullet points concise and impactful, but you MUST include ALL professional experience entries from the CV — never skip, merge, or omit any job/role.
+    - Remove fluffy or subjective language from bullet points.
+    - Combine repetitive bullet points within the SAME experience item.
+    - Be direct and focus only on the most impactful achievements per role.
+    - The number of experience items in the output MUST equal the number of jobs/roles in the CV.
     - Extract contact information (email, phone, location/address, LinkedIn) into the contact field.
     - Extract any known languages spoken by the applicant and their proficiency level (Native, Fluent, Advanced, Intermediate, Basic) and return them in the languages array as objects with 'language' and 'level' fields.
     - For each experience entry, include the period/dates (e.g. 'Jan 2020 – Mar 2023') in the 'period' field if available.
@@ -24,7 +37,7 @@ function buildPrompt(objective: string, language: string, text: string): string 
     - Suggest 1-3 prominent job titles that the applicant is highly qualified for based strictly on their CV experience. Return these in the targetTitles array.
     
     The career objective is: ${objective}
-    The target language for the output MUST BE: ${targetOutputLanguage}.
+    The target language for the ENTIRE output MUST BE: ${targetOutputLanguage} (translate EVERYTHING).
     
     CV TEXT:
     ${text}

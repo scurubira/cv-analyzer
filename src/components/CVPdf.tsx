@@ -233,7 +233,7 @@ interface CVPdfProps {
         languages?: { language: string; level: string }[];
         targetTitles?: string[];
         selectedTitle?: string;
-        socialNetworks?: { github?: string; portfolio?: string; twitter?: string; instagram?: string };
+        socialNetworks?: { github?: string; portfolio?: string; twitter?: string; instagram?: string; linkedin?: string };
         references?: { name: string; title?: string; company?: string; contact?: string }[];
         skills: { suggested: string[] };
     };
@@ -273,6 +273,7 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
     if (data.contact?.phone) contacts.push(data.contact.phone);
     if (data.contact?.location) contacts.push(data.contact.location);
     if (data.contact?.linkedin) contacts.push(data.contact.linkedin);
+    if (data.socialNetworks?.linkedin) contacts.push(`LinkedIn: ${data.socialNetworks.linkedin}`);
     if (data.socialNetworks?.github) contacts.push(`GitHub: ${data.socialNetworks.github}`);
     if (data.socialNetworks?.portfolio) contacts.push(data.socialNetworks.portfolio);
 

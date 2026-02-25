@@ -59,7 +59,7 @@ export default function Home() {
   const [customTitle, setCustomTitle] = useState('');
   const [editableTitles, setEditableTitles] = useState<string[]>([]);
   const [newTitleInput, setNewTitleInput] = useState('');
-  const [socialNetworks, setSocialNetworks] = useState({ github: '', portfolio: '', twitter: '', instagram: '' });
+  const [socialNetworks, setSocialNetworks] = useState({ github: '', portfolio: '', twitter: '', instagram: '', linkedin: '' });
   const [showSocialCard, setShowSocialCard] = useState(true);
 
   const THEMES_PREVIEW = [
@@ -163,6 +163,7 @@ export default function Home() {
         portfolio: socialNetworks.portfolio || undefined,
         twitter: socialNetworks.twitter || undefined,
         instagram: socialNetworks.instagram || undefined,
+        linkedin: socialNetworks.linkedin || undefined,
       },
       summary: {
         ...insights.summary,
@@ -177,15 +178,54 @@ export default function Home() {
 
   return (
     <main className="container relative">
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--glass-glow)] transition-all text-sm font-medium"
-        >
-          <Globe size={16} />
-          {lang === 'en' ? 'PT-BR' : 'EN'}
-        </button>
+      <div className="absolute top-4 right-4 z-10 flex gap-2 items-center">
+        {([
+          {
+            code: 'pt', label: 'Português', flag: (
+              <svg width="40" height="28" viewBox="0 0 40 28"><rect width="40" height="28" fill="#009b3a" /><polygon points="20,3 37,14 20,25 3,14" fill="#fedf00" /><circle cx="20" cy="14" r="6.5" fill="#002776" /><path d="M14,15 Q20,11 26,16" stroke="white" strokeWidth="1" fill="none" /></svg>
+            )
+          },
+          {
+            code: 'en', label: 'English', flag: (
+              <svg width="40" height="28" viewBox="0 0 40 28"><rect width="40" height="28" fill="#fff" /><rect width="40" height="2.15" y="0" fill="#B22234" /><rect width="40" height="2.15" y="4.3" fill="#B22234" /><rect width="40" height="2.15" y="8.6" fill="#B22234" /><rect width="40" height="2.15" y="12.9" fill="#B22234" /><rect width="40" height="2.15" y="17.2" fill="#B22234" /><rect width="40" height="2.15" y="21.5" fill="#B22234" /><rect width="40" height="2.15" y="25.8" fill="#B22234" /><rect width="18" height="15.05" fill="#3C3B6E" /><path d="M3,2h.1M9,2h.1M15,2h.1 M6,4.5h.1M12,4.5h.1 M3,7h.1M9,7h.1M15,7h.1 M6,9.5h.1M12,9.5h.1 M3,12h.1M9,12h.1M15,12h.1" stroke="white" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            )
+          },
+          {
+            code: 'es', label: 'Español', flag: (
+              <svg width="40" height="28" viewBox="0 0 40 28"><rect width="40" height="28" fill="#AA151B" /><rect y="7" width="40" height="14" fill="#F1BF00" /></svg>
+            )
+          },
+          {
+            code: 'fr', label: 'Français', flag: (
+              <svg width="40" height="28" viewBox="0 0 40 28"><rect width="40" height="28" fill="#ED2939" /><rect width="27" height="28" fill="#fff" /><rect width="13" height="28" fill="#002395" /></svg>
+            )
+          },
+          {
+            code: 'de', label: 'Deutsch', flag: (
+              <svg width="40" height="28" viewBox="0 0 40 28"><rect width="40" height="28" fill="#FFCE00" /><rect width="40" height="19" fill="#DD0000" /><rect width="40" height="9" fill="#000" /></svg>
+            )
+          },
+        ] as const).map(({ code, label, flag }) => (
+          <button
+            key={code}
+            onClick={() => setLang(code)}
+            title={label}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              opacity: lang === code ? 1 : 0.3,
+              transition: 'opacity 0.2s ease',
+              display: 'flex',
+              filter: lang === code ? 'drop-shadow(0 0 4px rgba(255,255,255,0.4))' : 'none',
+            }}
+          >
+            {flag}
+          </button>
+        ))}
       </div>
+
 
       {/* Header */}
       <div className={`text-center mt-8 mb-8 animate-slide-up ${phase !== 'upload' ? 'header-shrink' : ''}`} style={{ animationDelay: "0.1s" }}>
@@ -260,6 +300,9 @@ export default function Home() {
                 >
                   <option value="pt">Português (Brasil)</option>
                   <option value="en">English (US)</option>
+                  <option value="es">Español (ES)</option>
+                  <option value="fr">Français (FR)</option>
+                  <option value="de">Deutsch (DE)</option>
                 </select>
               </div>
               <div className="flex-1">
@@ -435,39 +478,48 @@ export default function Home() {
             ))}
 
             {/* Job Title Editor Card */}
-            <div className="glass-panel mb-6" style={{ border: '1px solid var(--accent)', borderRadius: '1rem' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="text-gradient" size={20} />
-                <h3 style={{ margin: 0 }}>{t.titleLabel}</h3>
+            <div className="glass-panel mb-6" style={{ border: '1px solid var(--accent)', borderRadius: '1.2rem', padding: '1.5rem' }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="text-gradient" size={18} />
+                <h3 style={{ margin: 0, fontSize: '1rem' }}>{t.titleLabel}</h3>
               </div>
-              <p className="subtitle mb-3" style={{ fontSize: '0.85rem' }}>{t.titleSuggestion}</p>
+              <p className="subtitle mb-4" style={{ fontSize: '0.8rem' }}>{t.titleSuggestion}</p>
 
-              {/* Editable pills list */}
+              {/* Pill selector */}
               <div className="flex flex-wrap gap-2 mb-4">
                 {editableTitles.map((title: string, i: number) => (
                   <div
                     key={i}
                     onClick={() => setSelectedTitle(title)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer transition-all ${(selectedTitle === title || (!selectedTitle && i === 0))
-                      ? 'bg-[var(--accent)] text-black border-[var(--accent)]'
-                      : 'border-[var(--glass-border)] hover:border-[var(--accent)]'
-                      }`}
+                    className="flex items-center gap-1 cursor-pointer transition-all"
+                    style={{
+                      padding: '0.45rem 1rem',
+                      borderRadius: '999px',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      border: '1.5px solid',
+                      borderColor: (selectedTitle === title || (!selectedTitle && i === 0)) ? 'var(--accent)' : 'var(--glass-border)',
+                      background: (selectedTitle === title || (!selectedTitle && i === 0)) ? 'var(--accent)' : 'transparent',
+                      color: (selectedTitle === title || (!selectedTitle && i === 0)) ? '#000' : 'var(--text-secondary)',
+                      boxShadow: (selectedTitle === title || (!selectedTitle && i === 0)) ? '0 0 12px var(--accent)40' : 'none',
+                    }}
                   >
+                    {(selectedTitle === title || (!selectedTitle && i === 0)) && <span style={{ marginRight: 4 }}>✓</span>}
                     <span>{title}</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); setEditableTitles(prev => { const next = prev.filter((_, idx) => idx !== i); if (selectedTitle === title) setSelectedTitle(next[0] || null); return next; }); }}
-                      className="ml-1 opacity-60 hover:opacity-100 transition-opacity"
-                      title="Remove"
+                      style={{ marginLeft: 6, opacity: 0.5, fontSize: '0.7rem', lineHeight: 1 }}
                     >✕</button>
                   </div>
                 ))}
               </div>
 
-              {/* Add new title */}
+              {/* Add custom */}
               <div className="flex gap-2">
                 <input
                   type="text"
                   className="glass-input flex-1"
+                  style={{ fontSize: '0.85rem', padding: '0.6rem 0.9rem' }}
                   placeholder={t.titleCustom}
                   value={newTitleInput}
                   onChange={(e) => setNewTitleInput(e.target.value)}
@@ -480,7 +532,8 @@ export default function Home() {
                   }}
                 />
                 <button
-                  className="btn-outline px-3"
+                  className="btn-outline"
+                  style={{ fontSize: '0.82rem', padding: '0.6rem 1rem', borderRadius: '0.6rem' }}
                   onClick={() => {
                     if (newTitleInput.trim()) {
                       setEditableTitles(prev => [...prev, newTitleInput.trim()]);
@@ -494,39 +547,36 @@ export default function Home() {
 
             {/* Social Networks Card */}
             {showSocialCard && (
-              <div className="glass-panel mb-6" style={{ border: '1px solid var(--glass-border)', borderRadius: '1rem' }}>
-                <div className="flex items-center justify-between mb-2">
+              <div className="glass-panel mb-6" style={{ border: '1px solid var(--glass-border)', borderRadius: '1.2rem', padding: '1.5rem' }}>
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <Globe size={20} className="text-gradient" />
-                    <h3 style={{ margin: 0 }}>{t.socialNetworksTitle}</h3>
+                    <Globe size={18} className="text-gradient" />
+                    <h3 style={{ margin: 0, fontSize: '1rem' }}>{t.socialNetworksTitle}</h3>
                   </div>
-                  <button
-                    className="btn-outline text-sm px-3 py-1"
-                    onClick={() => setShowSocialCard(false)}
-                  >{t.skip}</button>
+                  <button className="btn-outline text-sm px-3 py-1" style={{ borderRadius: '999px', fontSize: '0.75rem' }} onClick={() => setShowSocialCard(false)}>{t.skip}</button>
                 </div>
-                <p className="subtitle mb-4" style={{ fontSize: '0.85rem' }}>{t.socialNetworksSubtitle}</p>
-                <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
-                  <div>
-                    <label className="input-label text-xs">{t.github}</label>
-                    <input type="text" className="glass-input w-full" placeholder="github.com/username"
-                      value={socialNetworks.github} onChange={(e) => setSocialNetworks(p => ({ ...p, github: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="input-label text-xs">{t.portfolio}</label>
-                    <input type="text" className="glass-input w-full" placeholder="yoursite.com"
-                      value={socialNetworks.portfolio} onChange={(e) => setSocialNetworks(p => ({ ...p, portfolio: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="input-label text-xs">{t.twitter}</label>
-                    <input type="text" className="glass-input w-full" placeholder="@handle"
-                      value={socialNetworks.twitter} onChange={(e) => setSocialNetworks(p => ({ ...p, twitter: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="input-label text-xs">{t.instagram}</label>
-                    <input type="text" className="glass-input w-full" placeholder="@handle"
-                      value={socialNetworks.instagram} onChange={(e) => setSocialNetworks(p => ({ ...p, instagram: e.target.value }))} />
-                  </div>
+                <p className="subtitle mb-5" style={{ fontSize: '0.8rem' }}>{t.socialNetworksSubtitle}</p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {([
+                    { key: 'linkedin', icon: '💼', label: 'LinkedIn', placeholder: 'linkedin.com/in/username' },
+                    { key: 'github', icon: '🐙', label: 'GitHub', placeholder: 'github.com/username' },
+                    { key: 'portfolio', icon: '🌐', label: 'Portfolio', placeholder: 'yoursite.com' },
+                    { key: 'twitter', icon: '🐦', label: 'Twitter / X', placeholder: '@handle' },
+                    { key: 'instagram', icon: '📸', label: 'Instagram', placeholder: '@handle' },
+                  ] as const).map(({ key, icon, label, placeholder }) => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.75rem', padding: '0.6rem 1rem', border: '1px solid var(--glass-border)' }}>
+                      <span style={{ fontSize: '1.1rem', width: 24, textAlign: 'center' }}>{icon}</span>
+                      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', width: 80, flexShrink: 0 }}>{label}</span>
+                      <input
+                        type="text"
+                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.85rem' }}
+                        placeholder={placeholder}
+                        value={socialNetworks[key]}
+                        onChange={(e) => setSocialNetworks(p => ({ ...p, [key]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
