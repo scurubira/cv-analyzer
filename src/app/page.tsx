@@ -618,9 +618,11 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full text-center py-6 mt-8 border-t border-[var(--glass-border)] text-[var(--glass-text)]">
-        <p className="text-sm">
-          powered by <a href="http://www.benstech.com.br" target="_blank" rel="noopener noreferrer" className="font-semibold tracking-wide text-[var(--accent)] hover:opacity-80 transition-opacity">Benstech</a>
-        </p>
+        <div className="flex justify-center items-center px-4 w-full h-full">
+          <a href="http://www.benstech.com.br" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity flex justify-center items-center">
+            <img src="/SIGLA B.png" alt="Benstech" style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+          </a>
+        </div>
       </footer>
     </main >
   );
