@@ -52,8 +52,15 @@ export default function Home() {
 
   // Output configuration state
   const [cvLang, setCvLang] = useState<Language>('pt');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
   const [filename, setFilename] = useState("");
   const [colorTheme, setColorTheme] = useState('slate');
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
+  const [customTitle, setCustomTitle] = useState('');
+  const [editableTitles, setEditableTitles] = useState<string[]>([]);
+  const [newTitleInput, setNewTitleInput] = useState('');
+  const [socialNetworks, setSocialNetworks] = useState({ github: '', portfolio: '', twitter: '', instagram: '' });
+  const [showSocialCard, setShowSocialCard] = useState(true);
 
   const THEMES_PREVIEW = [
     { id: 'slate', color: '#1E293B', ring: '#38BDF8' },
@@ -104,7 +111,8 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('objective', objective);
-      formData.append('language', cvLang); // use cvLang instead of UI lang
+      formData.append('language', cvLang);
+      formData.append('model', selectedModel);
 
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -116,6 +124,11 @@ export default function Home() {
       const data = await res.json();
       setInsights(data.insights);
       setSelections({ summary: null, experiences: {} });
+      setEditableTitles(data.insights.targetTitles || []);
+      setSelectedTitle(null);
+      setCustomTitle('');
+      setNewTitleInput('');
+      setShowSocialCard(true);
       setPhase('review');
     } catch (error) {
       console.error(error);
@@ -141,8 +154,16 @@ export default function Home() {
 
   const exportData = useMemo(() => {
     if (!insights) return null;
+    const finalTitle = customTitle.trim() || selectedTitle || editableTitles[0] || '';
     return {
       ...insights,
+      selectedTitle: finalTitle,
+      socialNetworks: {
+        github: socialNetworks.github || undefined,
+        portfolio: socialNetworks.portfolio || undefined,
+        twitter: socialNetworks.twitter || undefined,
+        instagram: socialNetworks.instagram || undefined,
+      },
       summary: {
         ...insights.summary,
         suggested: selections.summary === 'declined' ? insights.summary.original : insights.summary.suggested
@@ -152,7 +173,7 @@ export default function Home() {
         suggestedBullets: selections.experiences[exp.id] === 'declined' ? exp.originalBullets : exp.suggestedBullets
       }))
     };
-  }, [insights, selections]);
+  }, [insights, selections, selectedTitle, customTitle, socialNetworks, editableTitles]);
 
   return (
     <main className="container relative">
@@ -252,6 +273,42 @@ export default function Home() {
                   onChange={(e) => setFilename(e.target.value)}
                 />
               </div>
+              <div className="flex-1">
+                <label className="text-xs text-[var(--glass-border)] mb-1 block">🤖 Modelo IA</label>
+                <select
+                  className="textarea-input"
+                  style={{ minHeight: 'auto', padding: '0.8rem' }}
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                >
+                  <optgroup label="✨ Google Gemini">
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash ⚡ (recomendado)</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (preview)</option>
+                  </optgroup>
+                  <optgroup label="🦙 Groq (gratuito + rápido)">
+                    <option value="groq:llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                    <option value="groq:llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
+                    <option value="groq:mixtral-8x7b-32768">Mixtral 8x7B</option>
+                    <option value="groq:gemma2-9b-it">Gemma 2 9B</option>
+                  </optgroup>
+                  <optgroup label="🔀 OpenRouter (vários modelos)">
+                    <option value="openrouter:meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (grátis)</option>
+                    <option value="openrouter:mistralai/mistral-7b-instruct:free">Mistral 7B (grátis)</option>
+                    <option value="openrouter:google/gemma-3-12b-it:free">Gemma 3 12B (grátis)</option>
+                    <option value="openrouter:anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                    <option value="openrouter:openai/gpt-4o-mini">GPT-4o Mini</option>
+                  </optgroup>
+                  <optgroup label="🇫🇷 Mistral AI">
+                    <option value="mistral:mistral-small-latest">Mistral Small</option>
+                    <option value="mistral:open-mistral-nemo">Mistral Nemo (grátis)</option>
+                  </optgroup>
+                  <optgroup label="⚙️ Sem IA">
+                    <option value="none">Sem IA (só extração do PDF)</option>
+                  </optgroup>
+                </select>
+              </div>
             </div>
 
             <div className="mt-8">
@@ -268,10 +325,11 @@ export default function Home() {
                     }}
                     title={theme.id}
                   >
-                    <span className="text-sm font-bold capitalize" style={{ color: theme.color }}>
-                      {theme.id}
+                    <span className="text-sm font-bold" style={{ color: theme.color }}>
+                      xxx
                     </span>
                   </button>
+
                 ))}
               </div>
             </div>
@@ -291,118 +349,222 @@ export default function Home() {
             <DonateButton />
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* Analyzing Phase */}
-      {phase === 'analyzing' && (
-        <div className="text-center animate-slide-up" style={{ marginTop: "10vh" }}>
-          <div className="radar-spinner"></div>
-          <h2 className="mt-8 text-gradient">{t.scanning}</h2>
-          <p className="subtitle">{t.matching} &apos;{objective}&apos;</p>
-        </div>
-      )}
+      {
+        phase === 'analyzing' && (
+          <div className="text-center animate-slide-up" style={{ marginTop: "10vh" }}>
+            <div className="radar-spinner"></div>
+            <h2 className="mt-8 text-gradient">{t.scanning}</h2>
+            <p className="subtitle">{t.matching} &apos;{objective}&apos;</p>
+          </div>
+        )
+      }
 
       {/* Review Phase */}
-      {phase === 'review' && insights && (
-        <div className="animate-slide-up" style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <div className="glass-panel mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="text-gradient" size={24} />
-              <h2>{t.summary}</h2>
-            </div>
-            <div className="diff-view">
-              <div className="diff-original">
-                <span className="badge badge-error">{t.current}</span>
-                <p>{insights.summary.original}</p>
+      {
+        phase === 'review' && insights && (
+          <div className="animate-slide-up" style={{ maxWidth: "900px", margin: "0 auto" }}>
+            <div className="glass-panel mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="text-gradient" size={24} />
+                <h2>{t.summary}</h2>
               </div>
-              <div className="diff-suggested mt-4">
-                <span className="badge badge-success">{t.suggestion}</span>
-                <p>{insights.summary.suggested}</p>
-              </div>
-            </div>
-            <div className="action-bar mt-4 flex gap-4">
-              <button
-                className={`btn-outline flex-1 ${selections.summary === 'declined' ? 'opacity-50' : ''}`}
-                style={selections.summary === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
-                onClick={() => handleSelectSummary('declined')}
-              >
-                <X size={16} /> {t.decline}
-              </button>
-              <button
-                className={`btn-success flex-1 ${selections.summary === 'accepted' ? 'opacity-50' : ''}`}
-                style={selections.summary === 'accepted' ? { transform: 'scale(0.98)' } : {}}
-                onClick={() => handleSelectSummary('accepted')}
-              >
-                <Check size={16} /> {selections.summary === 'accepted' ? 'Accepted' : t.accept}
-              </button>
-            </div>
-          </div>
-
-          {insights.experiences.map((exp, idx) => (
-            <div key={exp.id} className="glass-panel mb-8" style={{ animationDelay: `${idx * 0.1}s` }}>
-              <h3 className="mb-2">{exp.title}</h3>
-              <p className="subtitle mb-4 text-gradient">{exp.company}</p>
-
               <div className="diff-view">
+                <div className="diff-original">
+                  <span className="badge badge-error">{t.current}</span>
+                  <p>{insights.summary.original}</p>
+                </div>
                 <div className="diff-suggested mt-4">
-                  <span className="badge badge-success">{t.tailored}</span>
-                  <ul style={{ paddingLeft: "1.5rem", marginTop: "0.5rem" }}>
-                    {exp.suggestedBullets.map((bullet, i) => (
-                      <li key={i} style={{ marginBottom: "0.5rem", lineHeight: "1.5" }}>{bullet}</li>
-                    ))}
-                  </ul>
+                  <span className="badge badge-success">{t.suggestion}</span>
+                  <p>{insights.summary.suggested}</p>
                 </div>
               </div>
               <div className="action-bar mt-4 flex gap-4">
                 <button
-                  className={`btn-outline flex-1 ${selections.experiences[exp.id] === 'declined' ? 'opacity-50' : ''}`}
-                  style={selections.experiences[exp.id] === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
-                  onClick={() => handleSelectExperience(exp.id, 'declined')}
+                  className={`btn-outline flex-1 ${selections.summary === 'declined' ? 'opacity-50' : ''}`}
+                  style={selections.summary === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
+                  onClick={() => handleSelectSummary('declined')}
                 >
                   <X size={16} /> {t.decline}
                 </button>
                 <button
-                  className={`btn-success flex-1 ${selections.experiences[exp.id] === 'accepted' ? 'opacity-50' : ''}`}
-                  style={selections.experiences[exp.id] === 'accepted' ? { transform: 'scale(0.98)' } : {}}
-                  onClick={() => handleSelectExperience(exp.id, 'accepted')}
+                  className={`btn-success flex-1 ${selections.summary === 'accepted' ? 'opacity-50' : ''}`}
+                  style={selections.summary === 'accepted' ? { transform: 'scale(0.98)' } : {}}
+                  onClick={() => handleSelectSummary('accepted')}
                 >
-                  <Check size={16} /> {selections.experiences[exp.id] === 'accepted' ? 'Accepted' : t.applyToCv}
+                  <Check size={16} /> {selections.summary === 'accepted' ? 'Accepted' : t.accept}
                 </button>
               </div>
             </div>
-          ))}
 
-          <div className="text-center mt-8 mb-8 pt-8" style={{ borderTop: "1px solid var(--glass-border)" }}>
-            <button className="btn-primary" onClick={() => setPhase('export')} style={{ padding: "1.2rem 3rem", fontSize: "1.1rem" }}>
-              <FileDown size={24} />
-              {t.generateBtn}
-            </button>
+            {insights.experiences.map((exp, idx) => (
+              <div key={exp.id} className="glass-panel mb-8" style={{ animationDelay: `${idx * 0.1}s` }}>
+                <h3 className="mb-2">{exp.title}</h3>
+                <p className="subtitle mb-4 text-gradient">{exp.company}</p>
+
+                <div className="diff-view">
+                  <div className="diff-suggested mt-4">
+                    <span className="badge badge-success">{t.tailored}</span>
+                    <ul style={{ paddingLeft: "1.5rem", marginTop: "0.5rem" }}>
+                      {exp.suggestedBullets.map((bullet, i) => (
+                        <li key={i} style={{ marginBottom: "0.5rem", lineHeight: "1.5" }}>{bullet}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="action-bar mt-4 flex gap-4">
+                  <button
+                    className={`btn-outline flex-1 ${selections.experiences[exp.id] === 'declined' ? 'opacity-50' : ''}`}
+                    style={selections.experiences[exp.id] === 'declined' ? { borderColor: 'var(--error)', color: 'var(--error)' } : {}}
+                    onClick={() => handleSelectExperience(exp.id, 'declined')}
+                  >
+                    <X size={16} /> {t.decline}
+                  </button>
+                  <button
+                    className={`btn-success flex-1 ${selections.experiences[exp.id] === 'accepted' ? 'opacity-50' : ''}`}
+                    style={selections.experiences[exp.id] === 'accepted' ? { transform: 'scale(0.98)' } : {}}
+                    onClick={() => handleSelectExperience(exp.id, 'accepted')}
+                  >
+                    <Check size={16} /> {selections.experiences[exp.id] === 'accepted' ? 'Accepted' : t.applyToCv}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Job Title Editor Card */}
+            <div className="glass-panel mb-6" style={{ border: '1px solid var(--accent)', borderRadius: '1rem' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="text-gradient" size={20} />
+                <h3 style={{ margin: 0 }}>{t.titleLabel}</h3>
+              </div>
+              <p className="subtitle mb-3" style={{ fontSize: '0.85rem' }}>{t.titleSuggestion}</p>
+
+              {/* Editable pills list */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {editableTitles.map((title: string, i: number) => (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedTitle(title)}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer transition-all ${(selectedTitle === title || (!selectedTitle && i === 0))
+                      ? 'bg-[var(--accent)] text-black border-[var(--accent)]'
+                      : 'border-[var(--glass-border)] hover:border-[var(--accent)]'
+                      }`}
+                  >
+                    <span>{title}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditableTitles(prev => { const next = prev.filter((_, idx) => idx !== i); if (selectedTitle === title) setSelectedTitle(next[0] || null); return next; }); }}
+                      className="ml-1 opacity-60 hover:opacity-100 transition-opacity"
+                      title="Remove"
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add new title */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="glass-input flex-1"
+                  placeholder={t.titleCustom}
+                  value={newTitleInput}
+                  onChange={(e) => setNewTitleInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTitleInput.trim()) {
+                      setEditableTitles(prev => [...prev, newTitleInput.trim()]);
+                      setSelectedTitle(newTitleInput.trim());
+                      setNewTitleInput('');
+                    }
+                  }}
+                />
+                <button
+                  className="btn-outline px-3"
+                  onClick={() => {
+                    if (newTitleInput.trim()) {
+                      setEditableTitles(prev => [...prev, newTitleInput.trim()]);
+                      setSelectedTitle(newTitleInput.trim());
+                      setNewTitleInput('');
+                    }
+                  }}
+                >+ Add</button>
+              </div>
+            </div>
+
+            {/* Social Networks Card */}
+            {showSocialCard && (
+              <div className="glass-panel mb-6" style={{ border: '1px solid var(--glass-border)', borderRadius: '1rem' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Globe size={20} className="text-gradient" />
+                    <h3 style={{ margin: 0 }}>{t.socialNetworksTitle}</h3>
+                  </div>
+                  <button
+                    className="btn-outline text-sm px-3 py-1"
+                    onClick={() => setShowSocialCard(false)}
+                  >{t.skip}</button>
+                </div>
+                <p className="subtitle mb-4" style={{ fontSize: '0.85rem' }}>{t.socialNetworksSubtitle}</p>
+                <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                  <div>
+                    <label className="input-label text-xs">{t.github}</label>
+                    <input type="text" className="glass-input w-full" placeholder="github.com/username"
+                      value={socialNetworks.github} onChange={(e) => setSocialNetworks(p => ({ ...p, github: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="input-label text-xs">{t.portfolio}</label>
+                    <input type="text" className="glass-input w-full" placeholder="yoursite.com"
+                      value={socialNetworks.portfolio} onChange={(e) => setSocialNetworks(p => ({ ...p, portfolio: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="input-label text-xs">{t.twitter}</label>
+                    <input type="text" className="glass-input w-full" placeholder="@handle"
+                      value={socialNetworks.twitter} onChange={(e) => setSocialNetworks(p => ({ ...p, twitter: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="input-label text-xs">{t.instagram}</label>
+                    <input type="text" className="glass-input w-full" placeholder="@handle"
+                      value={socialNetworks.instagram} onChange={(e) => setSocialNetworks(p => ({ ...p, instagram: e.target.value }))} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center mt-8 mb-8 pt-8" style={{ borderTop: "1px solid var(--glass-border)" }}>
+              <button className="btn-primary" onClick={() => setPhase('export')} style={{ padding: "1.2rem 3rem", fontSize: "1.1rem" }}>
+                <FileDown size={24} />
+                {t.generateBtn}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Export Phase */}
-      {phase === 'export' && insights && (
-        <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: "600px", margin: "10vh auto" }}>
-          <FileDown size={64} className="text-gradient mx-auto mb-4" />
-          <h2 className="mb-4">{t.cvReady}</h2>
-          <p className="subtitle mb-8">{t.compiledMsg}</p>
+      {
+        phase === 'export' && insights && (
+          <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: "600px", margin: "10vh auto" }}>
+            <FileDown size={64} className="text-gradient mx-auto mb-4" />
+            <h2 className="mb-4">{t.cvReady}</h2>
+            <p className="subtitle mb-8">{t.compiledMsg}</p>
 
-          <PDFExportButton
-            insights={exportData}
-            objective={objective}
-            lang={cvLang}
-            customFilename={filename || dictionaries[cvLang].pdf.filename}
-            colorTheme={colorTheme}
-          />
+            <PDFExportButton
+              insights={exportData}
+              objective={objective}
+              lang={cvLang}
+              customFilename={filename || dictionaries[cvLang].pdf.filename}
+              colorTheme={colorTheme}
+            />
 
-          <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
-            {t.backToReview}
-          </button>
+            <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
+              {t.backToReview}
+            </button>
 
-          <DonateButton />
-        </div>
-      )}
+            <DonateButton />
+          </div>
+        )
+      }
 
       {/* Footer */}
       <footer className="w-full text-center py-6 mt-8 border-t border-[var(--glass-border)] text-[var(--glass-text)]">
@@ -410,7 +572,7 @@ export default function Home() {
           powered by <a href="http://www.benstech.com.br" target="_blank" rel="noopener noreferrer" className="font-semibold tracking-wide text-[var(--accent)] hover:opacity-80 transition-opacity">Benstech</a>
         </p>
       </footer>
-    </main>
+    </main >
   );
 }
 

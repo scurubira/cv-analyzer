@@ -1,173 +1,240 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 
+export type CVThemeColor = 'slate' | 'emerald' | 'violet' | 'rose' | 'amber';
+
+const THEMES: Record<CVThemeColor, { bg: string; accent: string; accentLight: string; text: string; sidebarBg: string; sidebarText: string; sidebarBorder: string }> = {
+    slate: { bg: '#1E293B', accent: '#38BDF8', accentLight: '#E0F2FE', text: '#FFFFFF', sidebarBg: '#F1F5F9', sidebarText: '#1E293B', sidebarBorder: '#CBD5E1' },
+    emerald: { bg: '#064E3B', accent: '#34D399', accentLight: '#D1FAE5', text: '#FFFFFF', sidebarBg: '#F0FDF4', sidebarText: '#064E3B', sidebarBorder: '#A7F3D0' },
+    violet: { bg: '#4C1D95', accent: '#A78BFA', accentLight: '#EDE9FE', text: '#FFFFFF', sidebarBg: '#F5F3FF', sidebarText: '#4C1D95', sidebarBorder: '#C4B5FD' },
+    rose: { bg: '#881337', accent: '#FB7185', accentLight: '#FFE4E6', text: '#FFFFFF', sidebarBg: '#FFF1F2', sidebarText: '#881337', sidebarBorder: '#FECDD3' },
+    amber: { bg: '#78350F', accent: '#FBBF24', accentLight: '#FEF3C7', text: '#FFFFFF', sidebarBg: '#FFFBEB', sidebarText: '#78350F', sidebarBorder: '#FDE68A' },
+};
+
 const styles = StyleSheet.create({
     page: {
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         fontFamily: 'Helvetica',
-        paddingLeft: '42%', // Reserve space for the left sidebar
     },
-    sidebar: {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: '42%',
-        paddingTop: 20,
-        paddingBottom: 20,
-        paddingLeft: 16,
-        paddingRight: 10,
+    // ─── HEADER ───────────────────────────────────────────────
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 24,
+        paddingBottom: 22,
+        paddingHorizontal: 28,
+    },
+    headerLeft: {
         flexDirection: 'column',
-        textAlign: 'left',
+        flex: 1,
     },
-    mainBody: {
-        width: '100%',
-        paddingTop: 20,
-        paddingBottom: 20,
-        paddingRight: 20,
-        paddingLeft: 8,
-        backgroundColor: '#F8FAFC',
-    },
-    name: {
-        fontSize: 14,
+    headerName: {
+        fontSize: 26,
         fontWeight: 700,
-        marginBottom: 2,
         letterSpacing: 0.5,
+        marginBottom: 3,
     },
-    targetTitles: {
-        fontSize: 10,
-        fontWeight: 700,
-        marginBottom: 15,
-        opacity: 0.9,
-    },
-    title: {
-        fontSize: 11,
+    headerTitle: {
+        fontSize: 12,
         fontWeight: 600,
-        marginBottom: 24,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    section: {
-        marginBottom: 15,
-    },
-    sidebarSectionTitle: {
-        fontSize: 11,
-        fontWeight: 700,
-        marginBottom: 12,
-        textTransform: 'uppercase',
         letterSpacing: 1,
-        borderBottomWidth: 1,
-        paddingBottom: 4,
+        opacity: 0.85,
+        textTransform: 'uppercase',
+    },
+    headerRight: {
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 3,
+    },
+    headerContact: {
+        fontSize: 9,
+        opacity: 0.9,
+        marginBottom: 2,
+        letterSpacing: 0.2,
+    },
+    // ─── BODY (two columns) ───────────────────────────────────
+    body: {
+        flexDirection: 'row',
+        flex: 1,
+    },
+    // ─── MAIN (left 65%) ──────────────────────────────────────
+    main: {
+        width: '65%',
+        paddingTop: 18,
+        paddingBottom: 18,
+        paddingLeft: 24,
+        paddingRight: 16,
+        backgroundColor: '#FFFFFF',
+    },
+    mainSection: {
+        marginBottom: 14,
     },
     mainSectionTitle: {
-        fontSize: 16,
+        fontSize: 10,
         fontWeight: 700,
-        color: '#0F172A',
-        marginBottom: 15,
         textTransform: 'uppercase',
-        letterSpacing: 1,
-        borderBottomWidth: 2,
-        borderBottomColor: '#E2E8F0',
-        paddingBottom: 5,
+        letterSpacing: 1.5,
+        marginBottom: 8,
+        paddingBottom: 4,
+        borderBottomWidth: 1.5,
     },
     bodyText: {
-        fontSize: 10,
-        color: '#334155',
-        lineHeight: 1.4,
+        fontSize: 9.5,
+        color: '#374151',
+        lineHeight: 1.5,
     },
-    experienceItem: {
+    expItem: {
         marginBottom: 12,
     },
     expHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'baseline',
-        marginBottom: 2,
+        alignItems: 'flex-start',
+        marginBottom: 1,
     },
     expTitle: {
-        fontSize: 13,
+        fontSize: 11,
         fontWeight: 700,
-        color: '#0F172A',
+        color: '#111827',
+        flex: 1,
+    },
+    expPeriod: {
+        fontSize: 8.5,
+        color: '#6B7280',
+        fontStyle: 'italic',
+        marginLeft: 8,
     },
     expCompany: {
-        fontSize: 11,
+        fontSize: 9.5,
         fontWeight: 600,
-        marginBottom: 6,
+        marginBottom: 5,
     },
-    bulletPoint: {
+    bulletRow: {
         flexDirection: 'row',
         marginBottom: 2,
-        paddingLeft: 5,
-    },
-    bulletText: {
-        fontSize: 10,
-        color: '#475569',
-        lineHeight: 1.3,
-        flex: 1,
+        paddingLeft: 2,
     },
     bulletDot: {
         width: 3,
         height: 3,
-        backgroundColor: '#94A3B8',
         borderRadius: 2,
-        marginTop: 5,
-        marginRight: 8,
+        marginTop: 4.5,
+        marginRight: 7,
+        flexShrink: 0,
     },
-    skillsContainer: {
-        flexDirection: 'column',
-        gap: 8,
-    },
-    skillItem: {
+    bulletText: {
         fontSize: 9,
-        marginBottom: 5,
-        lineHeight: 1.2,
+        color: '#4B5563',
+        lineHeight: 1.4,
+        flex: 1,
     },
-    contactSection: {
-        marginBottom: 25,
+    eduItem: {
+        marginBottom: 8,
+    },
+    eduDegree: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: '#111827',
+    },
+    eduInstitution: {
+        fontSize: 9,
+        color: '#6B7280',
+        marginTop: 1,
+    },
+    // ─── SIDEBAR (right 35%) ──────────────────────────────────
+    sidebar: {
+        width: '35%',
+        paddingTop: 18,
+        paddingBottom: 18,
+        paddingLeft: 14,
+        paddingRight: 18,
+        borderLeftWidth: 1,
+    },
+    sideSection: {
+        marginBottom: 14,
+    },
+    sideSectionTitle: {
+        fontSize: 9,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: 1.2,
+        marginBottom: 7,
+        paddingBottom: 3,
         borderBottomWidth: 1,
-        paddingBottom: 15,
     },
-    contactItemText: {
+    skillBadge: {
+        fontSize: 8.5,
+        marginBottom: 4,
+        lineHeight: 1.3,
+    },
+    tagPill: {
+        fontSize: 8,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 3,
+        marginBottom: 4,
+        marginRight: 4,
+        alignSelf: 'flex-start',
+    },
+    tagsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    refItem: {
+        marginBottom: 7,
+    },
+    refName: {
         fontSize: 9,
-        marginBottom: 6,
-        lineHeight: 1.1,
-    }
+        fontWeight: 700,
+        color: '#111827',
+    },
+    refDetail: {
+        fontSize: 8,
+        color: '#6B7280',
+        lineHeight: 1.3,
+    },
+    langRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 5,
+    },
+    langName: {
+        fontSize: 9,
+        fontWeight: 600,
+    },
+    langLevel: {
+        fontSize: 7.5,
+        opacity: 0.7,
+        marginBottom: 2,
+        textAlign: 'right',
+    },
+    langDots: {
+        flexDirection: 'row',
+        gap: 3,
+        marginTop: 1,
+    },
+    langDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
 });
-
-export type CVThemeColor = 'slate' | 'emerald' | 'violet' | 'rose' | 'amber';
-
-const THEMES: Record<CVThemeColor, any> = {
-    slate: { bg: '#1E293B', text: '#F8FAFC', accent: '#38BDF8', sectionBorder: '#334155', name: '#FFFFFF', sectionText: '#94A3B8' },
-    emerald: { bg: '#064E3B', text: '#ECFDF5', accent: '#34D399', sectionBorder: '#065F46', name: '#FFFFFF', sectionText: '#A7F3D0' },
-    violet: { bg: '#4C1D95', text: '#F5F3FF', accent: '#A78BFA', sectionBorder: '#5B21B6', name: '#FFFFFF', sectionText: '#C4B5FD' },
-    rose: { bg: '#881337', text: '#FFF1F2', accent: '#FB7185', sectionBorder: '#9F1239', name: '#FFFFFF', sectionText: '#FECDD3' },
-    amber: { bg: '#78350F', text: '#FFFBEB', accent: '#FBBF24', sectionBorder: '#92400E', name: '#FFFFFF', sectionText: '#FDE68A' },
-};
 
 interface CVPdfProps {
     data: {
         summary: { suggested: string };
-        contact?: {
-            email?: string;
-            phone?: string;
-            location?: string;
-            linkedin?: string;
-        };
-        experiences: {
-            id: number;
-            company: string;
-            title: string;
-            suggestedBullets: string[];
-        }[];
-        education?: {
-            degree: string;
-            institution: string;
-            year: string;
-        }[];
+        contact?: { email?: string; phone?: string; location?: string; linkedin?: string };
+        experiences: { id: number; company: string; title: string; period?: string; suggestedBullets: string[] }[];
+        education?: { degree: string; institution: string; year: string }[];
         certifications?: string[];
-        languages?: string[];
+        languages?: { language: string; level: string }[];
         targetTitles?: string[];
+        selectedTitle?: string;
+        socialNetworks?: { github?: string; portfolio?: string; twitter?: string; instagram?: string };
+        references?: { name: string; title?: string; company?: string; contact?: string }[];
         skills: { suggested: string[] };
     };
     name: string;
@@ -179,119 +246,195 @@ interface CVPdfProps {
         education: string;
         languages: string;
         certifications: string;
+        references: string;
     };
     colorTheme?: CVThemeColor;
 }
 
 export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, labels, colorTheme = 'slate' }) => {
-    const tConfig = THEMES[colorTheme as CVThemeColor] || THEMES.slate;
+    const t = THEMES[colorTheme as CVThemeColor] || THEMES.slate;
+
+    // Map language level to 1-5 dots
+    const levelToDots = (level: string): number => {
+        const l = (level || '').toLowerCase();
+        if (l.includes('native') || l.includes('fluente') || l.includes('nativo')) return 5;
+        if (l.includes('fluent') || l.includes('avançad') || l.includes('advanced')) return 4;
+        if (l.includes('upper') || l.includes('inter')) return 3;
+        if (l.includes('basic') || l.includes('básic') || l.includes('elementar')) return 2;
+        if (l.includes('beginn') || l.includes('inician')) return 1;
+        return 3; // default
+    };
+
+    const displayTitle = data.selectedTitle || (data.targetTitles?.[0]) || targetRole;
+
+    // Contacts list for header
+    const contacts: string[] = [];
+    if (data.contact?.email) contacts.push(data.contact.email);
+    if (data.contact?.phone) contacts.push(data.contact.phone);
+    if (data.contact?.location) contacts.push(data.contact.location);
+    if (data.contact?.linkedin) contacts.push(data.contact.linkedin);
+    if (data.socialNetworks?.github) contacts.push(`GitHub: ${data.socialNetworks.github}`);
+    if (data.socialNetworks?.portfolio) contacts.push(data.socialNetworks.portfolio);
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                {/* Sidebar */}
-                <View style={[styles.sidebar, { backgroundColor: tConfig.bg, color: tConfig.text }]}>
-                    <Text style={[styles.name, { color: tConfig.name }]}>{name}</Text>
-                    {data.targetTitles && data.targetTitles.length > 0 && (
-                        <Text style={[styles.targetTitles, { color: tConfig.name }]}>
-                            {data.targetTitles.join(' | ')}
-                        </Text>
-                    )}
 
-                    {data.contact && (
-                        <View style={[styles.contactSection, { borderBottomColor: tConfig.sectionBorder }]}>
-                            {data.contact.location && <Text style={styles.contactItemText}>{data.contact.location}</Text>}
-                            {data.contact.phone && <Text style={styles.contactItemText}>{data.contact.phone}</Text>}
-                            {data.contact.email && <Text style={styles.contactItemText}>{data.contact.email}</Text>}
-                            {data.contact.linkedin && <Text style={styles.contactItemText}>{data.contact.linkedin}</Text>}
-                        </View>
-                    )}
-
-                    <View style={styles.section}>
-                        <Text style={[styles.sidebarSectionTitle, { color: tConfig.sectionText, borderBottomColor: tConfig.sectionBorder }]}>{labels.skills}</Text>
-                        <View style={styles.skillsContainer}>
-                            {data.skills.suggested.map((skill: React.ReactNode, idx: React.Key | null | undefined) => (
-                                <Text key={idx} style={[styles.skillItem, { color: tConfig.text }]}>• {skill}</Text>
-                            ))}
-                        </View>
+                {/* ── HEADER ── */}
+                <View style={[styles.header, { backgroundColor: t.bg }]}>
+                    <View style={styles.headerLeft}>
+                        <Text style={[styles.headerName, { color: t.text }]}>{name}</Text>
+                        {displayTitle ? (
+                            <Text style={[styles.headerTitle, { color: t.accent }]}>{displayTitle}</Text>
+                        ) : null}
                     </View>
-
-                    {data.languages && data.languages.length > 0 && (
-                        <View style={styles.section}>
-                            <Text style={[styles.sidebarSectionTitle, { color: tConfig.sectionText, borderBottomColor: tConfig.sectionBorder }]}>{labels.languages}</Text>
-                            <View style={styles.skillsContainer}>
-                                {data.languages.map((lang: React.ReactNode, idx: React.Key | null | undefined) => (
-                                    <Text key={idx} style={[styles.skillItem, { color: tConfig.text }]}>• {lang}</Text>
-                                ))}
-                            </View>
-                        </View>
-                    )}
+                    <View style={styles.headerRight}>
+                        {contacts.map((c, i) => (
+                            <Text key={i} style={[styles.headerContact, { color: t.text }]}>{c}</Text>
+                        ))}
+                        {data.socialNetworks?.twitter && <Text style={[styles.headerContact, { color: t.text }]}>Twitter: {data.socialNetworks.twitter}</Text>}
+                        {data.socialNetworks?.instagram && <Text style={[styles.headerContact, { color: t.text }]}>Instagram: {data.socialNetworks.instagram}</Text>}
+                    </View>
                 </View>
 
-                {/* Main Content */}
-                <View style={styles.mainBody}>
+                {/* ── BODY ── */}
+                <View style={styles.body}>
 
-                    {/* Summary Section */}
-                    <View style={styles.section}>
-                        <Text style={styles.mainSectionTitle}>{labels.summary}</Text>
-                        <Text style={styles.bodyText}>{data.summary.suggested}</Text>
+                    {/* ── MAIN COLUMN ── */}
+                    <View style={styles.main}>
+
+                        {/* Summary */}
+                        {data.summary.suggested ? (
+                            <View style={styles.mainSection}>
+                                <Text style={[styles.mainSectionTitle, { color: t.bg, borderBottomColor: t.accentLight }]}>
+                                    {labels.summary}
+                                </Text>
+                                <Text style={styles.bodyText}>{data.summary.suggested}</Text>
+                            </View>
+                        ) : null}
+
+                        {/* Experience */}
+                        {data.experiences?.length > 0 && (
+                            <View style={styles.mainSection}>
+                                <Text style={[styles.mainSectionTitle, { color: t.bg, borderBottomColor: t.accentLight }]}>
+                                    {labels.experience}
+                                </Text>
+                                {data.experiences.map((exp) => (
+                                    <View key={exp.id} style={styles.expItem}>
+                                        <View style={styles.expHeader}>
+                                            <Text style={styles.expTitle}>{exp.title}</Text>
+                                            {exp.period && <Text style={styles.expPeriod}>{exp.period}</Text>}
+                                        </View>
+                                        <Text style={[styles.expCompany, { color: t.bg }]}>{exp.company}</Text>
+                                        {exp.suggestedBullets?.map((bullet, idx) => (
+                                            <View key={idx} style={styles.bulletRow}>
+                                                <View style={[styles.bulletDot, { backgroundColor: t.accent }]} />
+                                                <Text style={styles.bulletText}>{bullet}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* Education */}
+                        {data.education && data.education.length > 0 && (
+                            <View style={styles.mainSection}>
+                                <Text style={[styles.mainSectionTitle, { color: t.bg, borderBottomColor: t.accentLight }]}>
+                                    {labels.education}
+                                </Text>
+                                {data.education.map((edu, idx) => (
+                                    <View key={idx} style={styles.eduItem}>
+                                        <Text style={styles.eduDegree}>{edu.degree}</Text>
+                                        <Text style={styles.eduInstitution}>{edu.institution}{edu.year ? `  ·  ${edu.year}` : ''}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+
                     </View>
 
-                    {/* Experience Section */}
-                    <View style={styles.section}>
-                        <Text style={styles.mainSectionTitle}>{labels.experience}</Text>
-                        {data.experiences.map((exp) => (
-                            <View key={exp.id} style={styles.experienceItem}>
-                                <View style={styles.expHeader}>
-                                    <Text style={styles.expTitle}>{exp.title}</Text>
-                                </View>
-                                <Text style={[styles.expCompany, { color: tConfig.accent }]}>{exp.company}</Text>
+                    {/* ── SIDEBAR COLUMN ── */}
+                    <View style={[styles.sidebar, { backgroundColor: t.sidebarBg, borderLeftColor: t.sidebarBorder }]}>
 
-                                <View style={{ marginTop: 4 }}>
-                                    {exp.suggestedBullets.map((bullet: React.ReactNode, idx: React.Key | null | undefined) => (
-                                        <View key={idx} style={styles.bulletPoint}>
-                                            <View style={styles.bulletDot} />
-                                            <Text style={styles.bulletText}>{bullet}</Text>
+                        {/* Skills */}
+                        {data.skills?.suggested?.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.skills}
+                                </Text>
+                                <View style={styles.tagsRow}>
+                                    {data.skills.suggested.map((skill, i) => (
+                                        <View key={i} style={[styles.tagPill, { backgroundColor: t.accentLight }]}>
+                                            <Text style={[styles.skillBadge, { color: t.sidebarText }]}>{skill}</Text>
                                         </View>
                                     ))}
                                 </View>
                             </View>
-                        ))}
-                    </View>
+                        )}
 
-                    {/* Education Section */}
-                    {data.education && data.education.length > 0 && (
-                        <View style={styles.section}>
-                            <Text style={styles.mainSectionTitle}>{labels.education}</Text>
-                            {data.education.map((edu, idx) => (
-                                <View key={idx} style={styles.experienceItem}>
-                                    <View style={styles.expHeader}>
-                                        <Text style={styles.expTitle}>{edu.degree}</Text>
-                                    </View>
-                                    <Text style={[styles.expCompany, { color: tConfig.accent }]}>
-                                        {edu.institution} {edu.year ? ` • ${edu.year}` : ''}
-                                    </Text>
-                                </View>
-                            ))}
-                        </View>
-                    )}
+                        {/* Languages */}
+                        {data.languages && data.languages.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.languages}
+                                </Text>
+                                {data.languages.map((lang, i) => {
+                                    const lvl = typeof lang === 'string' ? lang : lang.level || '';
+                                    const name = typeof lang === 'string' ? lang : lang.language;
+                                    const dots = levelToDots(lvl);
+                                    return (
+                                        <View key={i} style={{ marginBottom: 6 }}>
+                                            <View style={styles.langRow}>
+                                                <Text style={[styles.langName, { color: t.sidebarText }]}>{name}</Text>
+                                                <Text style={[styles.langLevel, { color: t.sidebarText }]}>{lvl}</Text>
+                                            </View>
+                                            <View style={styles.langDots}>
+                                                {[1, 2, 3, 4, 5].map(n => (
+                                                    <View key={n} style={[styles.langDot, { backgroundColor: n <= dots ? t.accent : t.sidebarBorder }]} />
+                                                ))}
+                                            </View>
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        )}
 
-                    {/* Certifications Section */}
-                    {data.certifications && data.certifications.length > 0 && (
-                        <View style={styles.section}>
-                            <Text style={styles.mainSectionTitle}>{labels.certifications}</Text>
-                            <View style={{ marginTop: 4 }}>
-                                {data.certifications.map((cert: React.ReactNode, idx: React.Key | null | undefined) => (
-                                    <View key={idx} style={styles.bulletPoint}>
-                                        <View style={styles.bulletDot} />
-                                        <Text style={styles.bulletText}>{cert}</Text>
+                        {/* Certifications */}
+                        {data.certifications && data.certifications.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.certifications}
+                                </Text>
+                                {data.certifications.map((cert, i) => (
+                                    <Text key={i} style={[styles.skillBadge, { color: t.sidebarText }]}>· {cert}</Text>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* References */}
+                        {data.references && data.references.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.references}
+                                </Text>
+                                {data.references.map((ref, i) => (
+                                    <View key={i} style={styles.refItem}>
+                                        <Text style={styles.refName}>{ref.name}</Text>
+                                        {ref.title && <Text style={styles.refDetail}>{ref.title}</Text>}
+                                        {ref.company && <Text style={styles.refDetail}>{ref.company}</Text>}
+                                        {ref.contact && <Text style={styles.refDetail}>{ref.contact}</Text>}
                                     </View>
                                 ))}
                             </View>
-                        </View>
-                    )}
+                        )}
+
+                    </View>
                 </View>
+
             </Page>
         </Document>
     );
 };
+
+export default CVPdfDocument;

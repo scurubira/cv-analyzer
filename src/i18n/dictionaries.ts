@@ -34,7 +34,18 @@ export const dictionaries = {
             loadingPdfEngine: "Loading PDF Engine...",
             backToReview: "Back to Review",
             errorUpload: "Please upload a PDF file.",
-            errorAnalyze: "Failed to analyze CV. Please try again."
+            errorAnalyze: "Failed to analyze CV. Please try again.",
+            titleSuggestion: "AI suggests these job titles for your profile:",
+            titleCustom: "Or type a custom title",
+            titleLabel: "Your Job Title on CV",
+            socialNetworksTitle: "Add Social Networks to your CV?",
+            socialNetworksSubtitle: "These will appear on the sidebar of your CV",
+            github: "GitHub",
+            portfolio: "Portfolio / Website",
+            twitter: "Twitter / X",
+            instagram: "Instagram",
+            skip: "Skip",
+            addNetworks: "Add to CV"
         },
         pdf: {
             summary: "Professional Summary",
@@ -43,6 +54,7 @@ export const dictionaries = {
             education: "Education",
             languages: "Languages",
             certifications: "Courses & Certifications",
+            references: "References",
             filename: "Enhanced_CV.pdf"
         }
     },
@@ -79,7 +91,18 @@ export const dictionaries = {
             loadingPdfEngine: "Carregando Mecanismo de PDF...",
             backToReview: "Voltar para Revisão",
             errorUpload: "Por favor, envie um arquivo PDF.",
-            errorAnalyze: "Falha ao analisar o CV. Por favor, tente novamente."
+            errorAnalyze: "Falha ao analisar o CV. Por favor, tente novamente.",
+            titleSuggestion: "A IA sugere estes cargos para o seu perfil:",
+            titleCustom: "Ou escreva um título personalizado",
+            titleLabel: "Seu cargo no CV",
+            socialNetworksTitle: "Adicionar Redes Sociais ao CV?",
+            socialNetworksSubtitle: "Elas aparecerão na coluna lateral do seu CV",
+            github: "GitHub",
+            portfolio: "Portfólio / Site",
+            twitter: "Twitter / X",
+            instagram: "Instagram",
+            skip: "Pular",
+            addNetworks: "Adicionar ao CV"
         },
         pdf: {
             summary: "Resumo Profissional",
@@ -88,6 +111,7 @@ export const dictionaries = {
             education: "Formação",
             languages: "Idiomas",
             certifications: "Cursos e Certificações",
+            references: "Referências",
             filename: "CV_Aperfeicoado.pdf"
         }
     }
