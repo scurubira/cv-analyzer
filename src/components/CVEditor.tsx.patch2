@@ -1,0 +1,8 @@
+--- src/components/CVEditor.tsx2024-03-16 23:42:00.000000000 -0300
++++ src/components/CVEditor.tsx2024-03-16 23:42:00.000000000 -0300
+@@ -237,3 +237,3 @@
+-               <div className="glass-panel w-full flex-1 p-0 overflow-hidden" style={{ background: '#525659', display: 'flex' }}>
+-                    <PDFViewer style={{ width: '100%', height: '100%', border: 'none' }} showToolbar={true}>
++               <div className="w-full flex-1 p-0 overflow-hidden rounded-xl shadow-2xl" style={{ background: '#525659', display: 'flex', border: '1px solid rgba(255,255,255,0.1)' }}>
++                    <PDFViewer style={{ width: '100%', height: '100%', border: 'none' }} showToolbar={true} className="custom-pdf">
+                         {document}

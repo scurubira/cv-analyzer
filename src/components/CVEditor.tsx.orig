@@ -1,0 +1,337 @@
+"use client";
+
+import React, { useState, useMemo, useEffect } from 'react';
+import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { CVPdfDocument, CVThemeColor } from './CVPdf';
+import { Language, dictionaries } from '../i18n/dictionaries';
+import { FileDown, Edit3 } from 'lucide-react';
+
+interface CVEditorProps {
+    initialData: any;
+    name: string;
+    objective: string;
+    lang: Language;
+    customFilename?: string;
+    colorTheme?: CVThemeColor;
+    onBack?: () => void;
+}
+
+export default function CVEditor({ initialData, name, objective, lang, customFilename, colorTheme = 'slate', onBack }: CVEditorProps) {
+    const t = dictionaries[lang].app;
+    const tPdf = dictionaries[lang].pdf;
+
+    const [data, setData] = useState(initialData);
+
+    // Ensure we trigger a re-render when the initialData changes
+    useEffect(() => {
+        setData(initialData);
+    }, [initialData]);
+
+    const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setData((prev: any) => ({
+            ...prev,
+            summary: { ...prev.summary, suggested: e.target.value }
+        }));
+    };
+
+    const handleExpChange = (id: number, field: string, value: string | string[]) => {
+        setData((prev: any) => ({
+            ...prev,
+            experiences: prev.experiences.map((exp: any) => 
+                exp.id === id ? { ...exp, [field]: value } : exp
+            )
+        }));
+    };
+
+    const handleExpBulletChange = (id: number, bulletIndex: number, value: string) => {
+        setData((prev: any) => ({
+            ...prev,
+            experiences: prev.experiences.map((exp: any) => {
+                if (exp.id === id) {
+                    const newBullets = [...(exp.suggestedBullets || [])];
+                    newBullets[bulletIndex] = value;
+                    return { ...exp, suggestedBullets: newBullets };
+                }
+                return exp;
+            })
+        }));
+    };
+
+    const addBullet = (id: number) => {
+         setData((prev: any) => ({
+            ...prev,
+            experiences: prev.experiences.map((exp: any) => {
+                if (exp.id === id) {
+                    return { ...exp, suggestedBullets: [...(exp.suggestedBullets || []), ""] };
+                }
+                return exp;
+            })
+        }));
+    }
+    
+    const removeBullet = (id: number, bulletIndex: number) => {
+        setData((prev: any) => ({
+            ...prev,
+            experiences: prev.experiences.map((exp: any) => {
+                if (exp.id === id) {
+                    const newBullets = [...(exp.suggestedBullets || [])];
+                    newBullets.splice(bulletIndex, 1);
+                    return { ...exp, suggestedBullets: newBullets };
+                }
+                return exp;
+            })
+        }));
+    }
+
+    const handleSkillsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const skillsString = e.target.value;
+        const skillsArray = skillsString.split(',').map(s => s.trim()).filter(Boolean);
+        setData((prev: any) => ({
+            ...prev,
+            skills: { ...prev.skills, suggested: skillsArray }
+        }));
+    };
+
+    const handleContactChange = (field: string, value: string) => {
+         setData((prev: any) => ({
+            ...prev,
+            contact: { ...(prev.contact || {}), [field]: value }
+        }));
+    }
+
+     const handleSocialChange = (field: string, value: string) => {
+         setData((prev: any) => ({
+            ...prev,
+            socialNetworks: { ...(prev.socialNetworks || {}), [field]: value }
+        }));
+    }
+
+
+    const document = useMemo(() => (
+        <CVPdfDocument 
+            data={data} 
+            name={name} 
+            targetRole={objective} 
+            labels={tPdf} 
+            colorTheme={colorTheme} 
+        />
+    ), [data, name, objective, tPdf, colorTheme]);
+
+    return (
+        <div className="flex flex-col lg:flex-row gap-6 w-full max-w-[1600px] mx-auto h-[85vh]">
+            {/* Left Panel: Editor Form (35% width) */}
+            <div className="lg:w-[35%] w-full glass-panel overflow-y-auto pr-4 custom-scrollbar shrink-0" style={{ maxHeight: '100%', padding: '1.5rem' }}>
+                <div className="flex items-center gap-2 mb-6 border-b border-[var(--glass-border)] pb-4">
+                    <Edit3 className="text-gradient" size={24} />
+                    <h2 className="text-xl m-0">{lang === 'pt' ? 'Editar Conteúdo' : 'Edit Content'}</h2>
+                </div>
+
+                <div className="space-y-6">
+                    {/* Contact & Social Info */}
+                     <div className="space-y-4">
+                        <h3 className="text-lg text-[var(--accent)] border-none mb-2">Contato & Redes</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">Email</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.contact?.email || ''} 
+                                    onChange={(e) => handleContactChange('email', e.target.value)} 
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">Telefone</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.contact?.phone || ''} 
+                                    onChange={(e) => handleContactChange('phone', e.target.value)} 
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">Localização</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.contact?.location || ''} 
+                                    onChange={(e) => handleContactChange('location', e.target.value)} 
+                                />
+                            </div>
+                             <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">LinkedIn URL</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.socialNetworks?.linkedin || ''} 
+                                    onChange={(e) => handleSocialChange('linkedin', e.target.value)} 
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">GitHub</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.socialNetworks?.github || ''} 
+                                    onChange={(e) => handleSocialChange('github', e.target.value)} 
+                                />
+                            </div>
+                             <div>
+                                <label className="text-xs text-[var(--text-secondary)] mb-1 block">Portfolio/Site</label>
+                                <input 
+                                    className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                    value={data.socialNetworks?.portfolio || ''} 
+                                    onChange={(e) => handleSocialChange('portfolio', e.target.value)} 
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {/* Summary Section */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg text-[var(--accent)] border-none mb-0">{tPdf.summary}</h3>
+                        <textarea 
+                            className="textarea-input w-full min-h-[120px] text-sm leading-relaxed"
+                            value={data.summary?.suggested || ''}
+                            onChange={handleSummaryChange}
+                        />
+                    </div>
+
+                    {/* Experiences Section */}
+                    <div className="space-y-6">
+                         <h3 className="text-lg text-[var(--accent)] border-none mb-0">{tPdf.experience}</h3>
+                        {data.experiences?.map((exp: any) => (
+                            <div key={exp.id} className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                     <div>
+                                        <label className="text-xs text-[var(--text-secondary)] mb-1 block">Cargo</label>
+                                        <input 
+                                            className="textarea-input w-full min-h-0 py-2 px-3 text-sm font-semibold" 
+                                            value={exp.title} 
+                                            onChange={(e) => handleExpChange(exp.id, 'title', e.target.value)} 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-[var(--text-secondary)] mb-1 block">Empresa</label>
+                                        <input 
+                                            className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                            value={exp.company} 
+                                            onChange={(e) => handleExpChange(exp.id, 'company', e.target.value)} 
+                                        />
+                                    </div>
+                                     <div className="md:col-span-2">
+                                        <label className="text-xs text-[var(--text-secondary)] mb-1 block">Período</label>
+                                        <input 
+                                            className="textarea-input w-full min-h-0 py-2 px-3 text-sm" 
+                                            value={exp.period || ''} 
+                                            onChange={(e) => handleExpChange(exp.id, 'period', e.target.value)} 
+                                            placeholder="Ex: Jan 2020 - Present"
+                                        />
+                                    </div>
+                                </div>
+                               
+                                <div className="space-y-3 mt-4">
+                                    <label className="text-xs text-[var(--text-secondary)] mb-1 block">Responsabilidades (Bullets)</label>
+                                    {exp.suggestedBullets?.map((bullet: string, bIdx: number) => (
+                                        <div key={bIdx} className="flex gap-2 items-start">
+                                            <div className="mt-3 w-1.5 h-1.5 rounded-full bg-[var(--accent)] shrink-0"></div>
+                                            <textarea 
+                                                className="textarea-input flex-1 min-h-[60px] text-sm py-2 px-3"
+                                                value={bullet}
+                                                onChange={(e) => handleExpBulletChange(exp.id, bIdx, e.target.value)}
+                                            />
+                                            <button 
+                                                onClick={() => removeBullet(exp.id, bIdx)}
+                                                className="mt-1 p-2 text-[var(--error)] hover:bg-[rgba(255,0,0,0.1)] rounded-lg transition-colors"
+                                                title="Remover bullet"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button 
+                                        onClick={() => addBullet(exp.id)}
+                                        className="text-xs text-[var(--accent)] hover:underline flex items-center gap-1 mt-2"
+                                    >
+                                        + Adicionar bullet
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Skills Section */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg text-[var(--accent)] border-none mb-0">{tPdf.skills}</h3>
+                        <label className="text-xs text-[var(--text-secondary)] mb-1 block">Separadas por vírgula</label>
+                        <textarea 
+                            className="textarea-input w-full min-h-[80px] text-sm"
+                            value={(data.skills?.suggested || []).join(', ')}
+                            onChange={handleSkillsChange}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Panel: PDF Live Preview */}
+            <div className="hidden lg:flex flex-col flex-1 h-full gap-4">
+               <div className="w-full h-full flex-1 p-0 overflow-hidden rounded-2xl shadow-2xl relative" style={{ background: '#525659', border: '1px solid rgba(255,255,255,0.1)' }}>
+                   {/* Top toolbar background simulation */}
+                   <div className="absolute top-0 left-0 right-0 h-[48px] bg-[#323639] border-b border-[#202224] z-0 flex items-center px-4">
+                      <span className="text-[#f1f1f1] text-sm font-medium tracking-wide">CV Preview</span>
+                   </div>
+                    <PDFViewer style={{ width: '100%', height: '100%', border: 'none', position: 'relative', zIndex: 10, backgroundColor: 'transparent' }} showToolbar={true}>
+                        {document}
+                    </PDFViewer>
+               </div>
+               
+               {/* Export Actions (Desktop) */}
+                <div className="flex gap-4">
+                     {onBack && (
+                         <button className="btn-outline flex-1 py-3" onClick={onBack}>
+                            {lang === 'pt' ? 'Voltar para Revisão' : 'Back to Review'}
+                        </button>
+                     )}
+                     <div className="flex-[2]">
+                        <PDFDownloadLink
+                            document={document}
+                            fileName={customFilename || tPdf.filename}
+                            style={{ textDecoration: 'none', display: 'block', width: '100%' }}
+                        >
+                            {({ loading, error }: any) => (
+                                <button
+                                    className={`btn-success w-full py-3 flex items-center justify-center gap-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    disabled={loading}
+                                >
+                                    <FileDown size={20} />
+                                    {loading ? t.generatingPdf : t.downloadPdf}
+                                </button>
+                            )}
+                        </PDFDownloadLink>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Export Actions (Fixed Bottom) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[var(--background)] border-t border-[var(--glass-border)] flex gap-3 z-50">
+                 {onBack && (
+                     <button className="btn-outline flex-1 py-2 text-sm" onClick={onBack}>
+                        Voltar
+                    </button>
+                 )}
+                <div className="flex-[2]">
+                    <PDFDownloadLink
+                        document={document}
+                        fileName={customFilename || tPdf.filename}
+                        style={{ textDecoration: 'none', display: 'block', width: '100%' }}
+                    >
+                        {({ loading }: any) => (
+                            <button
+                                className={`btn-success w-full py-2 text-sm flex items-center justify-center gap-2 ${loading ? 'opacity-50' : ''}`}
+                            >
+                                <FileDown size={16} />
+                                {loading ? 'Gerando...' : 'Baixar PDF'}
+                            </button>
+                        )}
+                    </PDFDownloadLink>
+                </div>
+            </div>
+        </div>
+    );
+}

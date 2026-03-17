@@ -59,7 +59,11 @@ export default function Home() {
   const [customTitle, setCustomTitle] = useState('');
   const [editableTitles, setEditableTitles] = useState<string[]>([]);
   const [newTitleInput, setNewTitleInput] = useState('');
-  const [socialNetworks, setSocialNetworks] = useState({ github: '', portfolio: '', twitter: '', instagram: '', linkedin: '' });
+  const [socialNetworks, setSocialNetworks] = useState<{ id: string, network: string, link: string, description: string }[]>([
+    { id: '1', network: 'LinkedIn', link: '', description: '' },
+    { id: '2', network: 'GitHub', link: '', description: '' },
+    { id: '3', network: 'Portfolio', link: '', description: '' }
+  ]);
   const [showSocialCard, setShowSocialCard] = useState(true);
 
   const THEMES_PREVIEW = [
@@ -102,11 +106,13 @@ export default function Home() {
     }
   };
 
+  const [isRegeneratingExp, setIsRegeneratingExp] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
   const handleAnalyze = async () => {
-    if (!file || !objective) return;
-
+    if (!file || !objective.trim()) return;
     setPhase('analyzing');
-
+    setError(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -152,19 +158,62 @@ export default function Home() {
     }));
   };
 
+  const handleRegenerateExperience = async (expId: number) => {
+    if (!insights) return;
+    const exp = insights.experiences.find(e => e.id === expId);
+    if (!exp) return;
+
+    setIsRegeneratingExp(expId);
+    try {
+      const res = await fetch('/api/regenerate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          objective,
+          language: lang,
+          experienceListItem: exp,
+          model: selectedModel
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to regenerate experience');
+      }
+
+      const data = await res.json();
+      if (data.success && data.suggestedBullets) {
+         setInsights(prev => {
+             if (!prev) return prev;
+             return {
+                 ...prev,
+                 experiences: prev.experiences.map(e => 
+                     e.id === expId ? { ...e, suggestedBullets: data.suggestedBullets } : e
+                 )
+             };
+         });
+         // Make sure it goes back to default accepted/pending state instead of declined
+         setSelections(prev => ({
+            ...prev,
+            experiences: { ...prev.experiences, [expId]: 'accepted' }
+         }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error regenerating experience. Please try again.');
+    } finally {
+      setIsRegeneratingExp(null);
+    }
+  };
+
   const exportData = useMemo(() => {
     if (!insights) return null;
     const finalTitle = customTitle.trim() || selectedTitle || editableTitles[0] || '';
     return {
       ...insights,
       selectedTitle: finalTitle,
-      socialNetworks: {
-        github: socialNetworks.github || undefined,
-        portfolio: socialNetworks.portfolio || undefined,
-        twitter: socialNetworks.twitter || undefined,
-        instagram: socialNetworks.instagram || undefined,
-        linkedin: socialNetworks.linkedin || undefined,
-      },
+      socialNetworks: socialNetworks,
       summary: {
         ...insights.summary,
         suggested: selections.summary === 'declined' ? insights.summary.original : insights.summary.suggested
@@ -467,6 +516,19 @@ export default function Home() {
                     <X size={16} /> {t.decline}
                   </button>
                   <button
+                    className={`btn-outline flex-1`}
+                    style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                    onClick={() => handleRegenerateExperience(exp.id)}
+                    disabled={isRegeneratingExp === exp.id || selectedModel === 'none'}
+                  >
+                     {isRegeneratingExp === exp.id ? (
+                        <div className="radar-spinner" style={{ width: 16, height: 16, borderWidth: 2, margin: '0 8px' }}></div>
+                     ) : (
+                        <Sparkles size={16} />
+                     )}
+                     {t.regenerateBtn}
+                  </button>
+                  <button
                     className={`btn-success flex-1 ${selections.experiences[exp.id] === 'accepted' ? 'opacity-50' : ''}`}
                     style={selections.experiences[exp.id] === 'accepted' ? { transform: 'scale(0.98)' } : {}}
                     onClick={() => handleSelectExperience(exp.id, 'accepted')}
@@ -558,25 +620,43 @@ export default function Home() {
                 <p className="subtitle mb-5" style={{ fontSize: '0.8rem' }}>{t.socialNetworksSubtitle}</p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {([
-                    { key: 'linkedin', icon: '💼', label: 'LinkedIn', placeholder: 'linkedin.com/in/username' },
-                    { key: 'github', icon: '🐙', label: 'GitHub', placeholder: 'github.com/username' },
-                    { key: 'portfolio', icon: '🌐', label: 'Portfolio', placeholder: 'yoursite.com' },
-                    { key: 'twitter', icon: '🐦', label: 'Twitter / X', placeholder: '@handle' },
-                    { key: 'instagram', icon: '📸', label: 'Instagram', placeholder: '@handle' },
-                  ] as const).map(({ key, icon, label, placeholder }) => (
-                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.75rem', padding: '0.6rem 1rem', border: '1px solid var(--glass-border)' }}>
-                      <span style={{ fontSize: '1.1rem', width: 24, textAlign: 'center' }}>{icon}</span>
-                      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', width: 80, flexShrink: 0 }}>{label}</span>
+                  {socialNetworks.map((network, index) => (
+                    <div key={network.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.75rem', padding: '0.8rem 1rem', border: '1px solid var(--glass-border)' }}>
+                      <div className="flex justify-between items-center mb-1">
+                        <input
+                          type="text"
+                          style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 600, width: '100%' }}
+                          placeholder="Ex: LinkedIn, GitHub, Meu Blog..."
+                          value={network.network}
+                          onChange={(e) => setSocialNetworks(prev => prev.map((n, i) => i === index ? { ...n, network: e.target.value } : n))}
+                        />
+                        <button onClick={() => setSocialNetworks(prev => prev.filter((_, i) => i !== index))} className="text-[var(--text-secondary)] hover:text-white transition-colors">
+                          <X size={16} />
+                        </button>
+                      </div>
                       <input
                         type="text"
-                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-                        placeholder={placeholder}
-                        value={socialNetworks[key]}
-                        onChange={(e) => setSocialNetworks(p => ({ ...p, [key]: e.target.value }))}
+                        style={{ width: '100%', background: 'transparent', border: '1px solid var(--glass-border)', outline: 'none', color: 'var(--text-primary)', fontSize: '0.85rem', padding: '0.5rem 0.6rem', borderRadius: '6px' }}
+                        placeholder="Link (ex: linkedin.com/in/usuario)"
+                        value={network.link}
+                        onChange={(e) => setSocialNetworks(prev => prev.map((n, i) => i === index ? { ...n, link: e.target.value } : n))}
+                      />
+                      <input
+                        type="text"
+                        style={{ width: '100%', background: 'transparent', border: '1px solid var(--glass-border)', outline: 'none', color: 'var(--text-secondary)', fontSize: '0.85rem', padding: '0.5rem 0.6rem', borderRadius: '6px' }}
+                        placeholder="Descrição curta (opcional)"
+                        value={network.description}
+                        onChange={(e) => setSocialNetworks(prev => prev.map((n, i) => i === index ? { ...n, description: e.target.value } : n))}
                       />
                     </div>
                   ))}
+                  <button
+                    className="btn-outline mt-2 w-full flex justify-center items-center gap-2"
+                    style={{ fontSize: '0.85rem', padding: '0.6rem', borderRadius: '0.6rem' }}
+                    onClick={() => setSocialNetworks(prev => [...prev, { id: Math.random().toString(), network: '', link: '', description: '' }])}
+                  >
+                    + {t.addNetworks || 'Adicionar Link'}
+                  </button>
                 </div>
               </div>
             )}
@@ -594,24 +674,31 @@ export default function Home() {
       {/* Export Phase */}
       {
         phase === 'export' && insights && (
-          <div className="glass-panel text-center animate-slide-up" style={{ maxWidth: "600px", margin: "10vh auto" }}>
-            <FileDown size={64} className="text-gradient mx-auto mb-4" />
-            <h2 className="mb-4">{t.cvReady}</h2>
+          <div className="text-center animate-slide-up" style={{ marginTop: "10vh" }}>
+            <div className="file-icon mx-auto" style={{ width: 80, height: 80, background: "rgba(16, 185, 129, 0.1)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "2rem" }}>
+              <Check size={40} className="text-[var(--success)]" />
+            </div>
+            <h2 className="mb-2">{t.cvReady}</h2>
             <p className="subtitle mb-8">{t.compiledMsg}</p>
 
-            <PDFExportButton
-              insights={exportData}
-              objective={objective}
-              lang={cvLang}
-              customFilename={filename || dictionaries[cvLang].pdf.filename}
-              colorTheme={colorTheme}
-            />
+            <div style={{ maxWidth: 400, margin: "0 auto" }}>
+              <PDFExportButton
+                insights={exportData}
+                lang={cvLang}
+                customFilename={filename || dictionaries[cvLang].pdf.filename}
+                colorTheme={colorTheme as any}
+                objective={objective}
+              />
 
-            <button className="btn-outline" onClick={() => setPhase('review')} style={{ width: "100%" }}>
-              {t.backToReview}
-            </button>
-
-            <DonateButton />
+              <button className="btn-outline mt-4" style={{ width: "100%", padding: "1rem" }} onClick={() => setPhase('review')}>
+                <RefreshCw size={18} />
+                Voltar para Revisão
+              </button>
+            </div>
+            
+            <div className="mt-8">
+               <DonateButton />
+            </div>
           </div>
         )
       }

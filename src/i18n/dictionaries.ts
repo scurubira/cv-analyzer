@@ -25,6 +25,7 @@ export const dictionaries = {
             accept: "Accept Suggestion",
             tailored: "Tailored Bullets",
             editManually: "Edit manually",
+            regenerateBtn: "Regenerate ✨",
             applyToCv: "Apply to CV",
             generateBtn: "Generate Polished CV",
             cvReady: "Your CV is Ready!",
@@ -55,6 +56,7 @@ export const dictionaries = {
             languages: "Languages",
             certifications: "Courses & Certifications",
             references: "References",
+            links: "Links & Social Networks",
             filename: "Enhanced_CV.pdf"
         }
     },
@@ -82,6 +84,7 @@ export const dictionaries = {
             accept: "Aceitar Sugestão",
             tailored: "Tópicos Adaptados",
             editManually: "Editar manualmente",
+            regenerateBtn: "Re-gerar texto ✨",
             applyToCv: "Aplicar ao CV",
             generateBtn: "Gerar CV Aperfeiçoado",
             cvReady: "O seu CV está Pronto!",
@@ -112,6 +115,7 @@ export const dictionaries = {
             languages: "Idiomas",
             certifications: "Cursos e Certificações",
             references: "Referências",
+            links: "Links e Redes Sociais",
             filename: "CV_Aperfeicoado.pdf"
         }
     },
@@ -139,6 +143,7 @@ export const dictionaries = {
             accept: "Aceptar sugerencia",
             tailored: "Puntos adaptados",
             editManually: "Editar manualmente",
+            regenerateBtn: "Regenerar ✨",
             applyToCv: "Aplicar al CV",
             generateBtn: "Generar CV mejorado",
             cvReady: "¡Tu CV está listo!",
@@ -169,6 +174,7 @@ export const dictionaries = {
             languages: "Idiomas",
             certifications: "Cursos y Certificaciones",
             references: "Referencias",
+            links: "Enlaces y Redes Sociales",
             filename: "CV_Mejorado.pdf"
         }
     },
@@ -196,6 +202,7 @@ export const dictionaries = {
             accept: "Accepter la suggestion",
             tailored: "Points adaptés",
             editManually: "Modifier manuellement",
+            regenerateBtn: "Régénérer ✨",
             applyToCv: "Appliquer au CV",
             generateBtn: "Générer le CV amélioré",
             cvReady: "Votre CV est prêt !",
@@ -226,6 +233,7 @@ export const dictionaries = {
             languages: "Langues",
             certifications: "Cours et Certifications",
             references: "Références",
+            links: "Liens et Réseaux Sociaux",
             filename: "CV_Ameliore.pdf"
         }
     },
@@ -253,6 +261,7 @@ export const dictionaries = {
             accept: "Vorschlag annehmen",
             tailored: "Angepasste Punkte",
             editManually: "Manuell bearbeiten",
+            regenerateBtn: "Neu generieren ✨",
             applyToCv: "Auf Lebenslauf anwenden",
             generateBtn: "Polierten Lebenslauf generieren",
             cvReady: "Ihr Lebenslauf ist fertig!",
@@ -283,6 +292,7 @@ export const dictionaries = {
             languages: "Sprachen",
             certifications: "Kurse & Zertifizierungen",
             references: "Referenzen",
+            links: "Links & Soziale Netzwerke",
             filename: "Verbesserter_Lebenslauf.pdf"
         }
     }

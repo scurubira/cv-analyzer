@@ -134,14 +134,15 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     eduDegree: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: 700,
         color: '#111827',
     },
     eduInstitution: {
-        fontSize: 9,
+        fontSize: 8,
         color: '#6B7280',
         marginTop: 1,
+        lineHeight: 1.3,
     },
     // ─── SIDEBAR (right 35%) ──────────────────────────────────
     sidebar: {
@@ -233,7 +234,7 @@ interface CVPdfProps {
         languages?: { language: string; level: string }[];
         targetTitles?: string[];
         selectedTitle?: string;
-        socialNetworks?: { github?: string; portfolio?: string; twitter?: string; instagram?: string; linkedin?: string };
+        socialNetworks?: { id: string; network: string; link: string; description: string }[];
         references?: { name: string; title?: string; company?: string; contact?: string }[];
         skills: { suggested: string[] };
     };
@@ -247,6 +248,7 @@ interface CVPdfProps {
         languages: string;
         certifications: string;
         references: string;
+        links: string;
     };
     colorTheme?: CVThemeColor;
 }
@@ -272,10 +274,6 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
     if (data.contact?.email) contacts.push(data.contact.email);
     if (data.contact?.phone) contacts.push(data.contact.phone);
     if (data.contact?.location) contacts.push(data.contact.location);
-    if (data.contact?.linkedin) contacts.push(data.contact.linkedin);
-    if (data.socialNetworks?.linkedin) contacts.push(`LinkedIn: ${data.socialNetworks.linkedin}`);
-    if (data.socialNetworks?.github) contacts.push(`GitHub: ${data.socialNetworks.github}`);
-    if (data.socialNetworks?.portfolio) contacts.push(data.socialNetworks.portfolio);
 
     return (
         <Document>
@@ -293,8 +291,6 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                         {contacts.map((c, i) => (
                             <Text key={i} style={[styles.headerContact, { color: t.text }]}>{c}</Text>
                         ))}
-                        {data.socialNetworks?.twitter && <Text style={[styles.headerContact, { color: t.text }]}>Twitter: {data.socialNetworks.twitter}</Text>}
-                        {data.socialNetworks?.instagram && <Text style={[styles.headerContact, { color: t.text }]}>Instagram: {data.socialNetworks.instagram}</Text>}
                     </View>
                 </View>
 
@@ -321,7 +317,7 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                                     {labels.experience}
                                 </Text>
                                 {data.experiences.map((exp) => (
-                                    <View key={exp.id} style={styles.expItem}>
+                                    <View key={exp.id} style={styles.expItem} wrap={false}>
                                         <View style={styles.expHeader}>
                                             <Text style={styles.expTitle}>{exp.title}</Text>
                                             {exp.period && <Text style={styles.expPeriod}>{exp.period}</Text>}
@@ -338,20 +334,7 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                             </View>
                         )}
 
-                        {/* Education */}
-                        {data.education && data.education.length > 0 && (
-                            <View style={styles.mainSection}>
-                                <Text style={[styles.mainSectionTitle, { color: t.bg, borderBottomColor: t.accentLight }]}>
-                                    {labels.education}
-                                </Text>
-                                {data.education.map((edu, idx) => (
-                                    <View key={idx} style={styles.eduItem}>
-                                        <Text style={styles.eduDegree}>{edu.degree}</Text>
-                                        <Text style={styles.eduInstitution}>{edu.institution}{edu.year ? `  ·  ${edu.year}` : ''}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        )}
+
 
                     </View>
 
@@ -371,6 +354,21 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                                         </View>
                                     ))}
                                 </View>
+                            </View>
+                        )}
+
+                        {/* Education */}
+                        {data.education && data.education.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.education}
+                                </Text>
+                                {data.education.map((edu, idx) => (
+                                    <View key={idx} style={styles.eduItem}>
+                                        <Text style={[styles.eduDegree, { color: t.sidebarText }]}>{edu.degree}</Text>
+                                        <Text style={styles.eduInstitution}>{edu.institution}{edu.year ? `  ·  ${edu.year}` : ''}</Text>
+                                    </View>
+                                ))}
                             </View>
                         )}
 
@@ -410,6 +408,25 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                                 {data.certifications.map((cert, i) => (
                                     <Text key={i} style={[styles.skillBadge, { color: t.sidebarText }]}>· {cert}</Text>
                                 ))}
+                            </View>
+                        )}
+
+                        {/* Links & Social Networks */}
+                        {data.socialNetworks && data.socialNetworks.length > 0 && (
+                            <View style={styles.sideSection}>
+                                <Text style={[styles.sideSectionTitle, { color: t.sidebarText, borderBottomColor: t.sidebarBorder }]}>
+                                    {labels.links}
+                                </Text>
+                                {data.socialNetworks.map((net, i) => {
+                                    if (!net.network && !net.link) return null;
+                                    return (
+                                        <View key={i} style={styles.refItem}>
+                                            {net.network && <Text style={styles.refName}>{net.network}</Text>}
+                                            {net.link && <Text style={[styles.refDetail, { color: t.accent }]} >{net.link}</Text>}
+                                            {net.description && <Text style={styles.refDetail}>{net.description}</Text>}
+                                        </View>
+                                    );
+                                })}
                             </View>
                         )}
 
