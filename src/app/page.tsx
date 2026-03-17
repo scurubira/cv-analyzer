@@ -172,7 +172,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           objective,
-          language: lang,
+          language: cvLang,
           experienceListItem: exp,
           model: selectedModel
         }),
