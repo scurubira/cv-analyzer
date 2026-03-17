@@ -14,6 +14,9 @@ const PDFExportButton = dynamic(
 );
 
 type InsightData = {
+  name?: string;
+  targetTitles?: string[];
+  certifications?: string[];
   summary: { original: string, suggested: string };
   experiences: {
     id: number;
@@ -65,6 +68,9 @@ export default function Home() {
     { id: '3', network: 'Portfolio', link: '', description: '' }
   ]);
   const [showSocialCard, setShowSocialCard] = useState(true);
+  const [maxPages, setMaxPages] = useState<'auto'|1|2>('auto');
+  const [publishUrl, setPublishUrl] = useState<string|null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const THEMES_PREVIEW = [
     { id: 'slate', color: '#1E293B', ring: '#38BDF8' },
@@ -207,23 +213,64 @@ export default function Home() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!exportData || !insights) return;
+    setIsPublishing(true);
+    setError(null);
+    try {
+        const res = await fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                data: exportData,
+                name: insights.name || 'Candidate',
+                targetRole: exportData.selectedTitle,
+                labels: dictionaries[cvLang].pdf,
+                colorTheme
+            })
+        });
+        if (!res.ok) throw new Error('Publish failed');
+        const data = await res.json();
+        if (data.url) setPublishUrl(data.url);
+    } catch (err) {
+        console.error(err);
+        alert('Failed to publish CV');
+    } finally {
+        setIsPublishing(false);
+    }
+  };
+
   const exportData = useMemo(() => {
     if (!insights) return null;
     const finalTitle = customTitle.trim() || selectedTitle || editableTitles[0] || '';
+    
+    const baseExperiences = insights.experiences.map(exp => ({
+        ...exp,
+        suggestedBullets: selections.experiences[exp.id] === 'declined' ? exp.originalBullets : exp.suggestedBullets
+    }));
+    
+    let finalExperiences = baseExperiences;
+    let finalCerts = insights.certifications || [];
+
+    if (maxPages === 1) {
+        finalExperiences = baseExperiences.slice(0, 3);
+        finalCerts = finalCerts.slice(0, 3);
+    } else if (maxPages === 2) {
+        finalExperiences = baseExperiences.slice(0, 6);
+    }
+
     return {
       ...insights,
+      certifications: finalCerts,
       selectedTitle: finalTitle,
       socialNetworks: socialNetworks,
       summary: {
         ...insights.summary,
         suggested: selections.summary === 'declined' ? insights.summary.original : insights.summary.suggested
       },
-      experiences: insights.experiences.map(exp => ({
-        ...exp,
-        suggestedBullets: selections.experiences[exp.id] === 'declined' ? exp.originalBullets : exp.suggestedBullets
-      }))
+      experiences: finalExperiences
     };
-  }, [insights, selections, selectedTitle, customTitle, socialNetworks, editableTitles]);
+  }, [insights, selections, selectedTitle, customTitle, socialNetworks, editableTitles, maxPages]);
 
   return (
     <main className="container relative">
@@ -682,6 +729,23 @@ export default function Home() {
             <p className="subtitle mb-8">{t.compiledMsg}</p>
 
             <div style={{ maxWidth: 400, margin: "0 auto" }}>
+              <div className="mb-4 text-left">
+                  <label className="text-xs text-[var(--glass-border)] mb-1 block">{(t as any).maxPagesLabel || 'Max Pages'}</label>
+                  <select
+                    className="textarea-input"
+                    style={{ minHeight: 'auto', padding: '0.8rem' }}
+                    value={maxPages}
+                    onChange={(e) => {
+                      setMaxPages(e.target.value === 'auto' ? 'auto' : Number(e.target.value) as 1 | 2);
+                      setPublishUrl(null); // Reset URL if options change
+                    }}
+                  >
+                    <option value="auto">{(t as any).autoPages || 'Auto'}</option>
+                    <option value="1">{(t as any).page1 || '1 Page (Compact)'}</option>
+                    <option value="2">{(t as any).page2 || '2 Pages'}</option>
+                  </select>
+              </div>
+
               <PDFExportButton
                 insights={exportData}
                 lang={cvLang}
@@ -690,9 +754,23 @@ export default function Home() {
                 objective={objective}
               />
 
+              <button className="btn-success mt-4" style={{ width: "100%", padding: "1rem", backgroundColor: 'var(--accent)', color: '#000' }} onClick={handlePublish} disabled={isPublishing}>
+                {isPublishing ? <div className="radar-spinner" style={{ width: 16, height: 16, borderWidth: 2, margin: '0 8px', display: 'inline-block', verticalAlign: 'middle' }}></div> : <Globe size={18} style={{ display: 'inline-block', marginRight: 8, verticalAlign: 'middle' }} />}
+                <span style={{ verticalAlign: 'middle' }}>{(t as any).publishCV || 'Publish CV'}</span>
+              </button>
+
+              {publishUrl && (
+                  <div className="mt-4 p-4 glass-panel text-sm text-center animate-slide-up" style={{ border: '1px solid var(--success)' }}>
+                      <p className="mb-2 text-[#fff] font-bold">{(t as any).publishedLink || 'CV Published!'}</p>
+                      <a href={publishUrl} target="_blank" rel="noreferrer" className="text-blue-400 underline break-all font-bold">
+                          {window.location.origin}{publishUrl}
+                      </a>
+                  </div>
+              )}
+
               <button className="btn-outline mt-4" style={{ width: "100%", padding: "1rem" }} onClick={() => setPhase('review')}>
                 <RefreshCw size={18} />
-                Voltar para Revisão
+                {(t as any).backToReview || 'Voltar para Revisão'}
               </button>
             </div>
             

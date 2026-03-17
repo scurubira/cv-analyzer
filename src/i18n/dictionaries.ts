@@ -46,7 +46,13 @@ export const dictionaries = {
             twitter: "Twitter / X",
             instagram: "Instagram",
             skip: "Skip",
-            addNetworks: "Add to CV"
+            addNetworks: "Add to CV",
+            maxPagesLabel: "Max Pages",
+            autoPages: "Auto",
+            page1: "1 Page (Compact)",
+            page2: "2 Pages",
+            publishCV: "Publish CV",
+            publishedLink: "CV Published! Link:"
         },
         pdf: {
             summary: "Professional Summary",
@@ -105,7 +111,13 @@ export const dictionaries = {
             twitter: "Twitter / X",
             instagram: "Instagram",
             skip: "Pular",
-            addNetworks: "Adicionar ao CV"
+            addNetworks: "Adicionar ao CV",
+            maxPagesLabel: "Máximo de Páginas",
+            autoPages: "Automático",
+            page1: "1 Página (Compacto)",
+            page2: "2 Páginas",
+            publishCV: "Publicar CV",
+            publishedLink: "CV Publicado! Link:"
         },
         pdf: {
             summary: "Resumo Profissional",
@@ -164,7 +176,13 @@ export const dictionaries = {
             twitter: "Twitter / X",
             instagram: "Instagram",
             skip: "Omitir",
-            addNetworks: "Agregar al CV"
+            addNetworks: "Agregar al CV",
+            maxPagesLabel: "Máx de Páginas",
+            autoPages: "Automático",
+            page1: "1 Página (Compacto)",
+            page2: "2 Páginas",
+            publishCV: "Publicar CV",
+            publishedLink: "¡CV Publicado! Enlace:"
         },
         pdf: {
             summary: "Resumen Profesional",
@@ -223,7 +241,13 @@ export const dictionaries = {
             twitter: "Twitter / X",
             instagram: "Instagram",
             skip: "Ignorer",
-            addNetworks: "Ajouter au CV"
+            addNetworks: "Ajouter au CV",
+            maxPagesLabel: "Max de Pages",
+            autoPages: "Auto",
+            page1: "1 Page (Compact)",
+            page2: "2 Pages",
+            publishCV: "Publier CV",
+            publishedLink: "CV Publié ! Lien :"
         },
         pdf: {
             summary: "Résumé Professionnel",
@@ -282,7 +306,13 @@ export const dictionaries = {
             twitter: "Twitter / X",
             instagram: "Instagram",
             skip: "Überspringen",
-            addNetworks: "Zum Lebenslauf hinzufügen"
+            addNetworks: "Zum Lebenslauf hinzufügen",
+            maxPagesLabel: "Max. Seiten",
+            autoPages: "Auto",
+            page1: "1 Seite (Kompakt)",
+            page2: "2 Seiten",
+            publishCV: "CV veröffentlichen",
+            publishedLink: "CV Veröffentlicht! Link:"
         },
         pdf: {
             summary: "Berufliches Profil",

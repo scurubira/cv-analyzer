@@ -222,6 +222,15 @@ const styles = StyleSheet.create({
         height: 6,
         borderRadius: 3,
     },
+    pageNumber: {
+        position: 'absolute',
+        fontSize: 8,
+        bottom: 16,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        paddingTop: 10,
+    },
 });
 
 interface CVPdfProps {
@@ -450,6 +459,11 @@ export const CVPdfDocument: React.FC<CVPdfProps> = ({ data, name, targetRole, la
                     </View>
                 </View>
 
+                {/* Page Number Footer */}
+                <Text style={[styles.pageNumber, { color: '#9CA3AF' }]} render={({ pageNumber, totalPages }) => (
+                    `${pageNumber} / ${totalPages}`
+                )} fixed />
+                
             </Page>
         </Document>
     );
