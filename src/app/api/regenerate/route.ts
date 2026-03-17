@@ -67,7 +67,7 @@ async function callOpenAICompatible(
 
     if (!res.ok) {
         const errText = await res.text();
-        throw new Error(\`API error (\${res.status}): \${errText}\`);
+        throw new Error(`API error (${res.status}): ${errText}`);
     }
 
     const data = await res.json();
