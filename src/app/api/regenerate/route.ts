@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { objective, language, experienceListItem, model } = body;
-        const modelParam = model || 'gemini-2.0-flash';
+        const modelParam = model || 'gemini-3-flash';
 
         if (!objective || !experienceListItem) {
             return NextResponse.json({ error: 'Objective and experience data are required' }, { status: 400 });

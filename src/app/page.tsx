@@ -55,7 +55,7 @@ export default function Home() {
 
   // Output configuration state
   const [cvLang, setCvLang] = useState<Language>('pt');
-  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-3-flash');
   const [filename, setFilename] = useState("");
   const [colorTheme, setColorTheme] = useState('slate');
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
@@ -421,10 +421,11 @@ export default function Home() {
                   onChange={(e) => setSelectedModel(e.target.value)}
                 >
                   <optgroup label="✨ Google Gemini">
-                    <option value="gemini-2.0-flash">Gemini 2.0 Flash ⚡ (recomendado)</option>
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (preview)</option>
+                    <option value="gemini-3-flash">Gemini 3 Flash ⚡ (recomendado)</option>
+                    <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite 🚀 (rápido)</option>
+                    <option value="gemini-3.1-pro">Gemini 3.1 Pro 🧠 (avançado)</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (legado)</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro (legado)</option>
                   </optgroup>
                   <optgroup label="🦙 Groq (gratuito + rápido)">
                     <option value="groq:llama-3.3-70b-versatile">Llama 3.3 70B</option>
