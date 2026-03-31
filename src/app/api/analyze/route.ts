@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     const file = formData.get('file') as File | null;
     const objective = formData.get('objective') as string | null;
     const language = formData.get('language') as string || 'pt';
-    const modelParam = formData.get('model') as string || 'gemini-2.0-flash';
+    const modelParam = formData.get('model') as string || 'gemini-1.5-flash';
 
     if (!file || !objective) {
       return NextResponse.json({ error: 'File and objective are required' }, { status: 400 });
