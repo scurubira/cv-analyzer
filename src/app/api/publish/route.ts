@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             writeStream.on('error', reject);
         });
         
-        return NextResponse.json({ success: true, url: `/published/${filename}` });
+        return NextResponse.json({ success: true, url: `/cv/${filename}` });
     } catch (error: any) {
         console.error('Publish error:', error);
         return NextResponse.json({ error: 'Failed to publish CV' }, { status: 500 });
