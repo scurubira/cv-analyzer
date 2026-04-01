@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-const pdfParse = require('pdf-parse');
 import { GoogleGenAI } from '@google/genai';
 
 // ─── Shared JSON prompt (no schema enforcement for non-Gemini providers) ───────
@@ -103,6 +102,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Parse PDF
+    const pdfParse = require('pdf-parse');
     const buffer = Buffer.from(await file.arrayBuffer());
     const pdfData = await pdfParse(buffer);
     const text = pdfData.text;
