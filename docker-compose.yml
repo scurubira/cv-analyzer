@@ -8,7 +8,10 @@ services:
       - ./:/app
       - /app/node_modules
     env_file:
-      - .env.local
+      - path: .env.local
+        required: false
+      - path: .env
+        required: false
     environment:
       - NODE_ENV=production
       - WATCHPACK_POLLING=true
