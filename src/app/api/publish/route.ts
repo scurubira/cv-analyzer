@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import React from 'react';
 import { renderToStream } from '@react-pdf/renderer';
-import CVPdfDocument from '@/components/CVPdf';
+import CVPdfDocument from '../../../components/CVPdf';
 import fs from 'fs';
 import path from 'path';
 
