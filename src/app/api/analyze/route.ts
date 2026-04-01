@@ -102,39 +102,42 @@ export async function POST(req: Request) {
     }
 
     // 1. Parse PDF
-    // pdf-parse v2 changed its export structure — probe the module to find the right function
+    // Handle both pdf-parse v2 (Class-based export PDFParse) and v1 (Function-based export)
     const pdfParseModule = eval("require")('pdf-parse');
-    let pdfParse: any = null;
-
-    if (typeof pdfParseModule === 'function') {
-      pdfParse = pdfParseModule;
-    } else if (typeof pdfParseModule?.default === 'function') {
-      pdfParse = pdfParseModule.default;
-    } else if (typeof pdfParseModule?.PdfParse === 'function') {
-      pdfParse = pdfParseModule.PdfParse;
-    } else if (typeof pdfParseModule?.parse === 'function') {
-      pdfParse = pdfParseModule.parse;
-    } else if (typeof pdfParseModule?.pdf === 'function') {
-      pdfParse = pdfParseModule.pdf;
-    }
-
-    if (!pdfParse) {
-      // Return diagnostic info so we know what the module looks like
-      return NextResponse.json({
-        error: 'pdf-parse module export not recognized',
-        debug: {
-          type: typeof pdfParseModule,
-          keys: pdfParseModule ? Object.keys(pdfParseModule) : [],
-          defaultType: typeof pdfParseModule?.default,
-          defaultKeys: pdfParseModule?.default ? Object.keys(pdfParseModule.default) : [],
-          constructorName: pdfParseModule?.constructor?.name,
-        }
-      }, { status: 500 });
-    }
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    const pdfData = await pdfParse(buffer);
-    const text = pdfData.text;
+    let text = '';
+
+    if (pdfParseModule?.PDFParse) {
+      // v2.x handler
+      const parser = new pdfParseModule.PDFParse({ data: buffer });
+      const result = await parser.getText();
+      text = result.text;
+      if (typeof parser.destroy === 'function') {
+        await parser.destroy();
+      }
+    } else {
+      // v1.x fallback
+      let pdfParseFn: any = null;
+      if (typeof pdfParseModule === 'function') {
+        pdfParseFn = pdfParseModule;
+      } else if (typeof pdfParseModule?.default === 'function') {
+        pdfParseFn = pdfParseModule.default;
+      } else if (typeof pdfParseModule?.parse === 'function') {
+        pdfParseFn = pdfParseModule.parse;
+      }
+
+      if (pdfParseFn) {
+        const pdfData = await pdfParseFn(buffer);
+        text = pdfData.text;
+      } else {
+        return NextResponse.json({
+          error: 'Unrecognized pdf-parse module structure',
+          debug: {
+            keys: pdfParseModule ? Object.keys(pdfParseModule) : []
+          }
+        }, { status: 500 });
+      }
+    }
 
     // 2. No-AI mode
     if (modelParam === 'none') {
