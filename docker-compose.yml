@@ -1,12 +1,11 @@
 services:
   web:
-    image: node:latest
+    image: node:22
     working_dir: /app
     ports:
       - "8004:3000"
     volumes:
       - ./:/app
-      - /app/node_modules
     env_file:
       - path: .env.local
         required: false
@@ -14,7 +13,5 @@ services:
         required: false
     environment:
       - NODE_ENV=production
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
       - NEXT_TELEMETRY_DISABLED=1
-    command: sh -c "npm install --legacy-peer-deps && npx next build && npm start"
+    command: sh -c "npm ci --legacy-peer-deps && npx next build && npm start"
