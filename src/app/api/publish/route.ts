@@ -34,10 +34,11 @@ export async function POST(req: Request) {
                     education: 'Educação',
                     languages: 'Idiomas',
                     certifications: 'Certificações',
-                    references: 'Referências'
+                    references: 'Referências',
+                    links: 'Links'
                 },
                 colorTheme
-            })
+            }) as any
         );
         
         const writeStream = fs.createWriteStream(filePath);
