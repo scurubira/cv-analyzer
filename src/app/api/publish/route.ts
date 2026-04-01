@@ -24,10 +24,18 @@ export async function POST(req: Request) {
         
         const stream = await renderToStream(
             React.createElement(CVPdfDocument, {
-                data,
+                data: data,
                 name,
                 targetRole,
-                labels,
+                labels: {
+                    summary: 'Resumo',
+                    experience: 'Experiência',
+                    skills: 'Habilidades',
+                    education: 'Educação',
+                    languages: 'Idiomas',
+                    certifications: 'Certificações',
+                    references: 'Referências'
+                },
                 colorTheme
             })
         );

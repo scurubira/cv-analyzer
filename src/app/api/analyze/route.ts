@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import { GoogleGenAI } from '@google/genai';
 
 // ─── Shared JSON prompt (no schema enforcement for non-Gemini providers) ───────
