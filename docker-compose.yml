@@ -10,8 +10,8 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
       - NEXT_TELEMETRY_DISABLED=1
-    command: sh -c "npm install --legacy-peer-deps && npx next dev --hostname 0.0.0.0 --port 3000 --webpack"
+    command: sh -c "npm install --legacy-peer-deps && npm run build && npm start"
