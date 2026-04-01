@@ -7,9 +7,7 @@ const nextConfig = {
         };
         return config;
     },
-    experimental: {
-        allowedDevOrigins: ['benstech.cloud', '*.benstech.cloud', 'localhost', '*.localhost'],
-    },
+    turbopack: {},
 };
 
 export default nextConfig;
