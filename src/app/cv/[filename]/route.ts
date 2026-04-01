@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { Resend } from 'resend';
-
-// Initialize Resend - you will need to add RESEND_API_KEY to your .env.local
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(
   request: Request,
@@ -30,6 +26,9 @@ export async function GET(
 
   // Attempt to send email notification (non-blocking)
   if (process.env.RESEND_API_KEY) {
+    // Lazily import and instantiate Resend only when the key is available
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
     // Send email asynchronously so we don't delay the PDF loading
     resend.emails.send({
       from: 'CV Tracker <onboarding@resend.dev>', // Default resend testing email
