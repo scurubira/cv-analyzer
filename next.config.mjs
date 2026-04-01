@@ -2,6 +2,8 @@
 const nextConfig = {
     // Required for Next.js 16+ when a webpack config is present alongside Turbopack
     turbopack: {},
+    // Prevent Turbopack from breaking on node-native or problematic libraries like pdf-parse
+    serverExternalPackages: ['pdf-parse'],
     webpack: (config, { dev }) => {
         // Only apply polling in dev mode (hot reload inside Docker)
         if (dev) {
