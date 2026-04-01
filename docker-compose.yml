@@ -12,7 +12,14 @@ services:
       - path: .env
         required: false
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
       - HOSTNAME=0.0.0.0
-    command: sh -c "npm install --legacy-peer-deps && npx next build && npm start"
+    command: >
+      sh -c "
+        rm -rf node_modules/.cache &&
+        npm install --force &&
+        npm dedupe &&
+        npx next build &&
+        npm start
+      "

@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export default function GlobalError({
   error,
   reset,
@@ -13,7 +11,7 @@ export default function GlobalError({
     <html>
       <body>
         <div style={{ padding: "2rem", textAlign: "center", fontFamily: "sans-serif" }}>
-          <h2>Algo deu errado (Erro Global)!</h2>
+          <h2>Algo deu errado!</h2>
           <p>{error.message}</p>
           <button
             onClick={() => reset()}

@@ -1,14 +1,11 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-
 export default function NotFound() {
   return (
     <div style={{ padding: "4rem", textAlign: "center", fontFamily: "sans-serif" }}>
       <h2>Página não encontrada</h2>
       <p>A página que você está procurando não existe.</p>
-      <Link
+      <a
         href="/"
         style={{
           display: "inline-block",
@@ -21,7 +18,7 @@ export default function NotFound() {
         }}
       >
         Voltar ao início
-      </Link>
+      </a>
     </div>
   );
 }
