@@ -51,7 +51,10 @@ export async function POST(req: Request) {
         
         return NextResponse.json({ success: true, url: `/cv/${filename}` });
     } catch (error: any) {
-        console.error('Publish error:', error);
-        return NextResponse.json({ error: 'Failed to publish CV' }, { status: 500 });
+        console.error('Publish error caught in backend:', error);
+        return NextResponse.json({ 
+            error: 'Failed to publish CV', 
+            details: error?.message || String(error)
+        }, { status: 500 });
     }
 }

@@ -229,12 +229,16 @@ export default function Home() {
                 colorTheme
             })
         });
-        if (!res.ok) throw new Error('Publish failed');
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        
+        if (!res.ok) {
+            throw new Error(data.details || data.error || 'Publish failed');
+        }
+        
         if (data.url) setPublishUrl(data.url);
-    } catch (err) {
-        console.error(err);
-        alert('Failed to publish CV');
+    } catch (err: any) {
+        console.error('Publish error:', err);
+        alert('Failed to publish CV: ' + (err.message || 'Unknown error. Check server logs.'));
     } finally {
         setIsPublishing(false);
     }
