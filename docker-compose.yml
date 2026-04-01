@@ -14,4 +14,4 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
-    command: sh -c "npm ci --legacy-peer-deps && npx next build && npm start"
+    command: sh -c "npm install --legacy-peer-deps && npx next build && npm start"
