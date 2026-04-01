@@ -13,4 +13,5 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
-    command: sh -c "npm install --legacy-peer-deps && npx next dev --hostname 0.0.0.0 --port 3000"
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "npm install --legacy-peer-deps && npx next dev --hostname 0.0.0.0 --port 3000 --no-turbopack"
