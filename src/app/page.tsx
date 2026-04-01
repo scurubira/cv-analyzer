@@ -131,7 +131,11 @@ export default function Home() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Analysis failed');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        console.error('Server error payload:', errorData);
+        throw new Error(errorData ? JSON.stringify(errorData) : `Analysis failed with status ${res.status}`);
+      }
 
       const data = await res.json();
       setInsights(data.insights);
