@@ -103,7 +103,8 @@ export async function POST(req: Request) {
 
     // 1. Parse PDF
     // Bypass Turbopack static analysis using eval to prevent DOMMatrix build crashes
-    const pdfParse = eval("require")('pdf-parse');
+    const pdfParseModule = eval("require")('pdf-parse');
+    const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : pdfParseModule.default;
     const buffer = Buffer.from(await file.arrayBuffer());
     const pdfData = await pdfParse(buffer);
     const text = pdfData.text;
