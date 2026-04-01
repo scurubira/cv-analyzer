@@ -102,9 +102,36 @@ export async function POST(req: Request) {
     }
 
     // 1. Parse PDF
-    // Bypass Turbopack static analysis using eval to prevent DOMMatrix build crashes
+    // pdf-parse v2 changed its export structure — probe the module to find the right function
     const pdfParseModule = eval("require")('pdf-parse');
-    const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : pdfParseModule.default;
+    let pdfParse: any = null;
+
+    if (typeof pdfParseModule === 'function') {
+      pdfParse = pdfParseModule;
+    } else if (typeof pdfParseModule?.default === 'function') {
+      pdfParse = pdfParseModule.default;
+    } else if (typeof pdfParseModule?.PdfParse === 'function') {
+      pdfParse = pdfParseModule.PdfParse;
+    } else if (typeof pdfParseModule?.parse === 'function') {
+      pdfParse = pdfParseModule.parse;
+    } else if (typeof pdfParseModule?.pdf === 'function') {
+      pdfParse = pdfParseModule.pdf;
+    }
+
+    if (!pdfParse) {
+      // Return diagnostic info so we know what the module looks like
+      return NextResponse.json({
+        error: 'pdf-parse module export not recognized',
+        debug: {
+          type: typeof pdfParseModule,
+          keys: pdfParseModule ? Object.keys(pdfParseModule) : [],
+          defaultType: typeof pdfParseModule?.default,
+          defaultKeys: pdfParseModule?.default ? Object.keys(pdfParseModule.default) : [],
+          constructorName: pdfParseModule?.constructor?.name,
+        }
+      }, { status: 500 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const pdfData = await pdfParse(buffer);
     const text = pdfData.text;
