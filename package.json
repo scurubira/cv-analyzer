@@ -11,12 +11,16 @@
   "dependencies": {
     "@google/genai": "^1.48.0",
     "@react-pdf/renderer": "^4.3.2",
-    "lucide-react": "^1.7.0",
+    "lucide-react": "^0.475.0",
     "next": "16.2.1",
     "pdf-parse": "^2.4.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "resend": "^6.10.0"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom"
   },
   "devDependencies": {
     "@types/node": "^25",

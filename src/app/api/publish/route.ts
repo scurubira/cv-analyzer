@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import React from 'react';
-import { renderToStream } from '@react-pdf/renderer';
 import CVPdfDocument from '../../../components/CVPdf';
 import fs from 'fs';
 import path from 'path';
@@ -22,6 +21,11 @@ export async function POST(req: Request) {
         const filename = `CV-${safeName}-${id}.pdf`;
         const filePath = path.join(publishDir, filename);
         
+        // Dynamically import @react-pdf/renderer to prevent Next.js Turbopack 
+        // from crawling it during static compilation phase and crashing out.
+        const reactPdf = await import('@react-pdf/renderer');
+        const renderToStream = reactPdf.renderToStream;
+
         const stream = await renderToStream(
             React.createElement(CVPdfDocument, {
                 data: data,
