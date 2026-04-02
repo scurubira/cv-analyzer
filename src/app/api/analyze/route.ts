@@ -1,6 +1,49 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
+// ─── OpenAI-compatible call (Mistral) ──
+async function callOpenAICompatible(
+  baseUrl: string,
+  apiKey: string,
+  modelName: string,
+  prompt: string,
+  extraHeaders: Record<string, string> = {}
+): Promise<string> {
+  try {
+    const res = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        ...extraHeaders,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.3,
+      }),
+      signal: new AbortController().signal, // Manual timeout handling
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      const errJson = (() => { try { return JSON.parse(errText); } catch { return null; } })();
+      const message = errJson?.error?.message ?? errText;
+      if (res.status === 429) throw new Error(`Quota exceeded: ${message}`);
+      throw new Error(`API error (${res.status}): ${message}`);
+    }
+
+    const data = await res.json();
+    return data.choices[0]?.message?.content ?? '';
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - please try again');
+    }
+    throw error;
+  }
+}
+
 // ─── Shared JSON prompt ───────
 function buildPrompt(objective: string, language: string, text: string): string {
   const languageMap: Record<string, string> = {
@@ -124,38 +167,55 @@ export async function POST(req: Request) {
 
     const prompt = buildPrompt(objective, language, text);
 
-    // 3. Call Gemini API
+    // 3. Determine provider and call the right API
     let insightsText: string;
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
 
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: modelParam,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            name: { type: 'STRING' },
-            targetTitles: { type: 'ARRAY', items: { type: 'STRING' } },
-            summary: { type: 'OBJECT', properties: { original: { type: 'STRING' }, suggested: { type: 'STRING' } } },
-            contact: { type: 'OBJECT', properties: { email: { type: 'STRING' }, phone: { type: 'STRING' }, location: { type: 'STRING' }, linkedin: { type: 'STRING' } } },
-            experiences: { type: 'ARRAY', items: { type: 'OBJECT', properties: { id: { type: 'INTEGER' }, company: { type: 'STRING' }, title: { type: 'STRING' }, period: { type: 'STRING' }, originalBullets: { type: 'ARRAY', items: { type: 'STRING' } }, suggestedBullets: { type: 'ARRAY', items: { type: 'STRING' } } } } },
-            skills: { type: 'OBJECT', properties: { original: { type: 'ARRAY', items: { type: 'STRING' } }, suggested: { type: 'ARRAY', items: { type: 'STRING' } } } },
-            education: { type: 'ARRAY', items: { type: 'OBJECT', properties: { degree: { type: 'STRING' }, institution: { type: 'STRING' }, year: { type: 'STRING' } } } },
-            languages: { type: 'ARRAY', items: { type: 'OBJECT', properties: { language: { type: 'STRING' }, level: { type: 'STRING' } } } },
-            certifications: { type: 'ARRAY', items: { type: 'STRING' } },
-            references: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, title: { type: 'STRING' }, company: { type: 'STRING' }, contact: { type: 'STRING' } } } },
+    // ── MISTRAL ───────────────────────────────────────────────────────────────────
+    if (modelParam.startsWith('mistral:')) {
+      const modelName = modelParam.replace('mistral:', '');
+      const apiKey = process.env.MISTRAL_API_KEY;
+      if (!apiKey) return NextResponse.json({ error: 'MISTRAL_API_KEY not configured' }, { status: 500 });
+
+      insightsText = await callOpenAICompatible(
+        'https://api.mistral.ai/v1/chat/completions',
+        apiKey,
+        modelName,
+        prompt
+      );
+
+      // ── GEMINI (default) ───────────────────────────────────────────────────────
+    } else {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
+
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: modelParam,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              name: { type: 'STRING' },
+              targetTitles: { type: 'ARRAY', items: { type: 'STRING' } },
+              summary: { type: 'OBJECT', properties: { original: { type: 'STRING' }, suggested: { type: 'STRING' } } },
+              contact: { type: 'OBJECT', properties: { email: { type: 'STRING' }, phone: { type: 'STRING' }, location: { type: 'STRING' }, linkedin: { type: 'STRING' } } },
+              experiences: { type: 'ARRAY', items: { type: 'OBJECT', properties: { id: { type: 'INTEGER' }, company: { type: 'STRING' }, title: { type: 'STRING' }, period: { type: 'STRING' }, originalBullets: { type: 'ARRAY', items: { type: 'STRING' } }, suggestedBullets: { type: 'ARRAY', items: { type: 'STRING' } } } } },
+              skills: { type: 'OBJECT', properties: { original: { type: 'ARRAY', items: { type: 'STRING' } }, suggested: { type: 'ARRAY', items: { type: 'STRING' } } } },
+              education: { type: 'ARRAY', items: { type: 'OBJECT', properties: { degree: { type: 'STRING' }, institution: { type: 'STRING' }, year: { type: 'STRING' } } } },
+              languages: { type: 'ARRAY', items: { type: 'OBJECT', properties: { language: { type: 'STRING' }, level: { type: 'STRING' } } } },
+              certifications: { type: 'ARRAY', items: { type: 'STRING' } },
+              references: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, title: { type: 'STRING' }, company: { type: 'STRING' }, contact: { type: 'STRING' } } } },
+            },
+            required: ['summary', 'experiences', 'skills'],
           },
-          required: ['summary', 'experiences', 'skills'],
         },
-      },
-    });
+      });
 
-    if (!response.text) throw new Error('Empty response from Gemini');
-    insightsText = response.text;
+      if (!response.text) throw new Error('Empty response from Gemini');
+      insightsText = response.text;
+    }
 
     const insights = JSON.parse(insightsText);
     return NextResponse.json({ success: true, originalTextLength: text.length, insights });

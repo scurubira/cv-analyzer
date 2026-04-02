@@ -119,7 +119,9 @@ export default function HomeClient({ providers }: { providers: Providers }) {
   const handleAnalyze = async () => {
     if (!file || !objective.trim()) return;
 
-    const providerKey = selectedModel === 'none' ? null : 'gemini';
+    const providerKey = selectedModel.startsWith('mistral:') ? 'mistral'
+      : selectedModel === 'none' ? null
+      : 'gemini';
 
     if (providerKey && !providers[providerKey]) {
       setError(`API key not configured for provider: ${providerKey}`);
@@ -440,6 +442,12 @@ export default function HomeClient({ providers }: { providers: Providers }) {
                     <optgroup label="✨ Google Gemini">
                       <option value="gemini-2.5-flash">Gemini 2.5 Flash ⚡ (recomendado)</option>
                       <option value="gemini-2.0-flash">Gemini 2.0 Flash 🚀 (rápido)</option>
+                    </optgroup>
+                  )}
+                  {providers.mistral && (
+                    <optgroup label="🇫🇷 Mistral AI">
+                      <option value="mistral:mistral-small-latest">Mistral Small</option>
+                      <option value="mistral:open-mistral-nemo">Mistral Nemo (grátis)</option>
                     </optgroup>
                   )}
                   <optgroup label="⚙️ Sem IA">
