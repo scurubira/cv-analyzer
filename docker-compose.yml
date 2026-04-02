@@ -3,7 +3,7 @@ services:
     image: node:20.19-alpine
     working_dir: /app
     ports:
-      - "8005:8005"
+      - "8005:3000"
     volumes:
       - ./:/app
       - /app/node_modules
@@ -15,6 +15,7 @@ services:
       - HOSTNAME=0.0.0.0
     command: >
       sh -c "
+        rm -rf .next &&
         npm install &&
         npm run build &&
         npm run start
